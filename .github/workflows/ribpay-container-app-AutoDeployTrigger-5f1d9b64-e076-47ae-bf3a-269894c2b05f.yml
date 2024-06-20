@@ -42,6 +42,6 @@ jobs:
           resourceGroup: ribpayTestApiDeployResourceGroup
           imageToBuild: ribpayregistry.azurecr.io/ribpay-container-app:${{ github.sha }}
           _buildArgumentsKey_: |
-            _buildArgumentsValues_
+            PRISMA_CLIENT=generate
 
 
