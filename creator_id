@@ -1,0 +1,14 @@
+yarn run v1.22.19
+$ /Users/loukaaltdorfreynes/Documents/Fortaine/ribpay-api-nestjs/node_modules/.bin/prisma migrate dev -n partners - unique
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "ribpay-api.postgres.database.azure.com:5432"
+
+
+⚠️  Warnings for the current datasource:
+
+  • A unique constraint covering the columns `[creator_id]` on the table `partners` will be added. If there are existing duplicate values, this will fail.
+
+[?25l[2K[1G[36m?[39m [1mAre you sure you want to create and apply this migration?[22m [90m›[39m [90m(y/N)[39m[2K[1G[2K[1G[31m✖[39m [1mAre you sure you want to create and apply this migration?[22m [90m…[39m no
+[?25hMigration cancelled.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.

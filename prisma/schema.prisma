@@ -1,0 +1,186 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64", "linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model accounts {
+  account_id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  account_last_modified      DateTime?           @db.Timestamptz(6)
+  account_national_id        String              @db.VarChar(255)
+  account_name               String              @db.VarChar(255)
+  account_type               String              @db.VarChar(255)
+  account_is_active          Boolean
+  account_deletion_date      DateTime?           @db.Timestamptz(6)
+  account_created_at         DateTime            @default(now()) @db.Timestamptz(6)
+  account_currency           String              @db.VarChar(255)
+  account_notification_email String              @db.VarChar(255)
+  account_creation_url       String?             @db.VarChar(255)
+  account_blob_storage_url   String?             @db.VarChar(255)
+  partner_id                 String?             @db.Uuid
+  creator_id                 String              @db.VarChar(255)
+  partners                   partners?           @relation(fields: [partner_id], references: [partner_id], onDelete: NoAction, onUpdate: NoAction)
+  billing_addresses          billing_addresses[]
+  contracts                  contracts[]
+  installments               installments[]
+  invoices                   invoices[]
+  terminals                  terminals[]
+  transactions               transactions[]
+  user_has_accounts          user_has_accounts[]
+}
+
+model billing_addresses {
+  billing_address_id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  billing_address_created_at              DateTime? @default(now()) @db.Timestamptz(6)
+  billing_address_last_modified           DateTime? @db.Timestamptz(6)
+  billing_address                         String    @db.VarChar(255)
+  billing_address_complement_localisation String?   @db.VarChar(255)
+  billing_address_numero_voie             String?   @db.VarChar(255)
+  billing_address_indice_repetition       String?   @db.VarChar(255)
+  billing_address_type_voie               String?   @db.VarChar(255)
+  billing_address_libelle_voie            String?   @db.VarChar(255)
+  billing_address_distribution_speciale   String?   @db.VarChar(255)
+  billing_address_code_postal             String?   @db.VarChar(255)
+  billing_address_libelle_commune         String?   @db.VarChar(255)
+  billing_address_code_pays               String?   @db.VarChar(255)
+  billing_address_pays                    String?   @db.VarChar(255)
+  account_id                              String    @db.Uuid
+  creator_id                              String    @db.VarChar(255)
+  accounts                                accounts  @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model contracts {
+  contract_id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contract_created_at       DateTime?      @default(now()) @db.Timestamptz(6)
+  contract_last_modified    DateTime?      @db.Timestamptz(6)
+  contract_type             String         @db.VarChar(255)
+  contract_number           String         @db.VarChar(255)
+  contract_beneficiary_name String         @db.VarChar(255)
+  contract_merchant_id      String         @db.VarChar(255)
+  contract_alias_id         String?        @db.VarChar(255)
+  terminal_id               String?        @db.Uuid
+  account_id                String         @db.Uuid
+  creator_id                String         @db.VarChar(255)
+  accounts                  accounts       @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  terminals                 terminals?     @relation(fields: [terminal_id], references: [terminal_id], onDelete: NoAction, onUpdate: NoAction)
+  transactions              transactions[]
+}
+
+model installments {
+  installment_id                       String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  installment_last_modified            DateTime?      @db.Timestamptz(6)
+  installment_status                   String?        @db.VarChar(255)
+  installment_occurences               Int?
+  installment_vat                      Int?
+  installment_currency                 String?        @db.VarChar(255)
+  installment_total_amount_without_vat String?        @db.VarChar(255)
+  installment_paid_amount_without_vat  String?        @db.VarChar(255)
+  installment_created_at               DateTime?      @default(now()) @db.Timestamptz(6)
+  account_id                           String?        @db.Uuid
+  terminal_id                          String?        @db.Uuid
+  creator_id                           String         @db.VarChar(255)
+  accounts                             accounts?      @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  terminals                            terminals?     @relation(fields: [terminal_id], references: [terminal_id], onDelete: NoAction, onUpdate: NoAction)
+  transactions                         transactions[]
+}
+
+model invoices {
+  invoice_id                                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoice_last_modified                         DateTime? @db.Timestamptz(6)
+  invoice_number                                String    @db.VarChar(255)
+  invoice_month                                 String    @db.VarChar(255)
+  invoice_created_at                            DateTime? @db.Timestamptz(6)
+  invoice_status                                String    @db.VarChar(255)
+  invoice_usage_ribpay                          Int?
+  invoice_total_amount_cents_without_vat_ribpay Int?
+  invoice_vat_ribpay                            Int?
+  invoice_usage_vads                            Int?
+  invoice_total_amount_cents_without_vat_vads   Int?
+  invoice_vat_vads                              Int?
+  invoice_total_amount_cents_without_vat        Int
+  invoice_total_amount_cents                    Int
+  account_id                                    String    @db.Uuid
+  creator_id                                    String    @db.VarChar(255)
+  accounts                                      accounts  @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model partners {
+  partner_id       String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partner_name     String     @db.VarChar(255)
+  notification_url String     @db.VarChar(255)
+  creator_id       String     @unique @db.VarChar(255)
+  accounts         accounts[]
+}
+
+model terminals {
+  terminal_id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  terminal_created_at             DateTime?      @default(now()) @db.Timestamptz(6)
+  terminal_last_modified          DateTime?      @db.Timestamptz(6)
+  terminal_label                  String         @db.VarChar(255)
+  terminal_favorite_contract_type String?        @db.VarChar(255)
+  terminal_subscription_id        String         @db.VarChar(255)
+  terminal_subscription_type      String         @db.VarChar(255)
+  account_id                      String         @db.Uuid
+  creator_id                      String         @db.VarChar(255)
+  contracts                       contracts[]
+  installments                    installments[]
+  accounts                        accounts       @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  transactions                    transactions[]
+}
+
+model transactions {
+  transaction_id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transaction_last_modified      DateTime?     @db.Timestamptz(6)
+  transaction_id_oxlin           String        @db.VarChar(255)
+  transaction_status             String        @db.VarChar(255)
+  transaction_instant_payment    Boolean
+  transaction_amount_without_vat Int
+  transaction_amount_cents       Int
+  transaction_currency           String        @db.VarChar(255)
+  transaction_vat                Int
+  transaction_label              String        @db.VarChar(255)
+  transaction_auth_url           String        @db.VarChar(255)
+  transaction_redirect_url       String        @db.VarChar(255)
+  transaction_notification_url   String        @db.VarChar(255)
+  transaction_initiated          DateTime?     @default(now()) @db.Timestamptz(6)
+  transaction_finished           DateTime?     @db.Timestamptz(6)
+  account_id                     String        @db.Uuid
+  contract_id                    String        @db.Uuid
+  terminal_id                    String        @db.Uuid
+  installment_id                 String?       @db.Uuid
+  creator_id                     String        @db.VarChar(255)
+  accounts                       accounts      @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  contracts                      contracts     @relation(fields: [contract_id], references: [contract_id], onDelete: NoAction, onUpdate: NoAction)
+  installments                   installments? @relation(fields: [installment_id], references: [installment_id], onDelete: NoAction, onUpdate: NoAction)
+  terminals                      terminals     @relation(fields: [terminal_id], references: [terminal_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_has_accounts {
+  user_id    String   @db.Uuid
+  account_id String   @db.Uuid
+  user_role  String   @db.VarChar(255)
+  accounts   accounts @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([user_id, account_id])
+  @@unique([user_id, account_id])
+}
+
+model users {
+  user_id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_created_at    DateTime            @default(now()) @db.Timestamptz(6)
+  user_last_modified DateTime?           @db.Timestamptz(6)
+  user_first_name    String?             @db.VarChar(255)
+  user_last_name     String?             @db.VarChar(255)
+  user_birth_date    String?             @db.VarChar(255)
+  user_birth_city    String?             @db.VarChar(255)
+  user_birth_country String?             @db.VarChar(255)
+  user_phone         String?             @db.VarChar(255)
+  user_email         String?             @db.VarChar(255)
+  creator_id         String              @db.VarChar(255)
+  user_has_accounts  user_has_accounts[]
+}

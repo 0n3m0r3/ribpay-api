@@ -1,0 +1,22 @@
+yarn run v1.22.19
+$ /Users/loukaaltdorfreynes/Documents/Fortaine/ribpay-api-nestjs/node_modules/.bin/prisma migrate dev -n partners -
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "ribpay-api.postgres.database.azure.com:5432"
+
+Applying migration `20240418160329_partners`
+
+The following migration(s) have been created and applied from new schema changes:
+
+migrations/
+  └─ 20240418160329_partners/
+    └─ migration.sql
+
+Your database is now in sync with your schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (v5.12.1) to ./node_modules/@prisma/client in 81ms
+
+
+Done in 40.74s.
