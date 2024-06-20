@@ -41,7 +41,25 @@ jobs:
           tenant-id: ${{ secrets.RIBPAYCONTAINERAPP_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.RIBPAYCONTAINERAPP_AZURE_SUBSCRIPTION_ID }}
 
+      - name: Log in to Azure Container Registry
+        run: |
+          az acr login --name ribpayregistry
+
       - name: Build and push container image to registry
+        run: |
+          echo "FROM node:18
+          WORKDIR /app
+          COPY package*.json ./
+          RUN npm install
+          COPY . .
+          RUN npx prisma generate
+          RUN npm run build
+          EXPOSE 3000
+          CMD [\"npm\", \"run\", \"start:prod\"]" > Dockerfile
+          docker build --platform linux/amd64 -t ribpayregistry.azurecr.io/ribpay-api:v0 .
+          docker push ribpayregistry.azurecr.io/ribpay-api:v0
+
+      - name: Deploy to Azure Container Apps
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }} 
@@ -50,6 +68,6 @@ jobs:
           registryPassword: ${{ secrets.RIBPAYCONTAINERAPP_REGISTRY_PASSWORD }}
           containerAppName: ribpay-container-app
           resourceGroup: ribpayTestApiDeployResourceGroup
-          imageToBuild: ribpayregistry.azurecr.io/ribpay-container-app:${{ github.sha }}
+          imageToBuild: ribpayregistry.azurecr.io/ribpay-api:v0
           buildArguments: |
             PRISMA_CLIENT=generate
