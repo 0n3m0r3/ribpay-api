@@ -59,6 +59,12 @@ jobs:
           docker build --platform linux/amd64 -t ribpayregistry.azurecr.io/ribpay-api:v0 .
           docker push ribpayregistry.azurecr.io/ribpay-api:v0
 
+      - name: Set ACR credentials in Azure Container App with retry
+        run: |
+          for i in {1..5}; do
+            az containerapp registry set -n ribpay-container-app -g ribpayTestApiDeployResourceGroup --server ribpayregistry.azurecr.io --username ${{ secrets.RIBPAYCONTAINERAPP_REGISTRY_USERNAME }} --password ${{ secrets.RIBPAYCONTAINERAPP_REGISTRY_PASSWORD }} && break || sleep 15;
+          done
+
       - name: Deploy to Azure Container Apps
         uses: azure/container-apps-deploy-action@v2
         with:
