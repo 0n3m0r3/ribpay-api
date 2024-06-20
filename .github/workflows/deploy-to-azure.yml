@@ -3,7 +3,7 @@ name: Build and Deploy to Azure Container Apps
 on:
   push:
     branches:
-      - main  # Adjust to your desired branch
+      - main  
 
 jobs:
   build-and-deploy:
@@ -12,6 +12,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npx prisma generate
+
+      - name: Build application
+        run: |
+          npm run build
 
       - name: Log in to Azure
         uses: azure/login@v1
@@ -32,6 +46,15 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
+          echo "FROM node:18
+          WORKDIR /app
+          COPY package*.json ./
+          RUN npm install
+          COPY . .
+          RUN npx prisma generate
+          RUN npm run build
+          EXPOSE 3000
+          CMD [\"npm\", \"run\", \"start:prod\"]" > Dockerfile
           docker build --platform linux/amd64 -t ribpayregistry.azurecr.io/ribpay-api:v0 .
           docker push ribpayregistry.azurecr.io/ribpay-api:v0
 
