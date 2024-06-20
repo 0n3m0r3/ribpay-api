@@ -1,28 +1,38 @@
 name: Trigger auto deployment for ribpay-container-app
 
-# When this action will be executed
 on:
-  # Automatically trigger it when detected changes in repo
   push:
     branches: 
-      [ main ]
+      - main
     paths:
-    - '**'
-    - '.github/workflows/ribpay-container-app-AutoDeployTrigger-5f1d9b64-e076-47ae-bf3a-269894c2b05f.yml'
-
-  # Allow manual trigger 
+      - '**'
+      - '.github/workflows/ribpay-container-app-AutoDeployTrigger-5f1d9b64-e076-47ae-bf3a-269894c2b05f.yml'
   workflow_dispatch:      
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions: 
-      id-token: write #This is required for requesting the OIDC JWT Token
-      contents: read #Required when GH token is used to authenticate with private repo
+      id-token: write # This is required for requesting the OIDC JWT Token
+      contents: read # Required when GH token is used to authenticate with private repo
 
     steps:
       - name: Checkout to the branch
         uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npx prisma generate
+
+      - name: Build application
+        run: |
+          npm run build
 
       - name: Azure Login
         uses: azure/login@v1
@@ -41,7 +51,5 @@ jobs:
           containerAppName: ribpay-container-app
           resourceGroup: ribpayTestApiDeployResourceGroup
           imageToBuild: ribpayregistry.azurecr.io/ribpay-container-app:${{ github.sha }}
-          _buildArgumentsKey_: |
+          buildArguments: |
             PRISMA_CLIENT=generate
-
-
