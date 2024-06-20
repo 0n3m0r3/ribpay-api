@@ -8,6 +8,6 @@ export class AppController {
 
   @Get('/')
   getRoot(): string {
-    return 'API running';
+    return 'API running, yeah!';
   }
 }
