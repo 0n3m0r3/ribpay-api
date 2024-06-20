@@ -1,0 +1,54 @@
+name: Build and Deploy to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Resource Group
+        run: |
+          az group create --name ribpayTestApiDeployResourceGroup --location westeurope || echo "Resource group already exists"
+
+      - name: Create Azure Container Registry
+        run: |
+          az acr create --resource-group ribpayTestApiDeployResourceGroup --name ribpayregistry --sku Basic --location westeurope || echo "ACR already exists"
+
+      - name: Log in to Azure Container Registry
+        run: |
+          echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY_NAME }}.azurecr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+      - name: Build and Push Docker image
+        run: |
+          docker build --platform linux/amd64 -t ${{ secrets.REGISTRY_NAME }}.azurecr.io/ribpay-api:v0 .
+          docker push ${{ secrets.REGISTRY_NAME }}.azurecr.io/ribpay-api:v0
+
+      - name: Create Azure Container App Environment
+        run: |
+          az containerapp env create --name ribpayEnvironment2 --resource-group ribpayTestApiDeployResourceGroup --location westeurope || echo "Environment already exists"
+
+      - name: Create Azure Container App
+        run: |
+          az containerapp create --resource-group ribpayTestApiDeployResourceGroup --name ribpay-container-app --environment ribpayEnvironment2 --image ${{ secrets.REGISTRY_NAME }}.azurecr.io/ribpay-api:v0 --target-port 3000 --ingress external --registry-server ${{ secrets.REGISTRY_NAME }}.azurecr.io --registry-username ${{ secrets.REGISTRY_USERNAME }} --registry-password ${{ secrets.REGISTRY_PASSWORD }} || echo "App already exists, updating"
+
+      - name: Assign Managed Identity
+        run: |
+          az containerapp identity assign --name ribpay-container-app --resource-group ribpayTestApiDeployResourceGroup --system-assigned || echo "Managed Identity already assigned"
+
+      - name: Assign AcrPull Role
+        run: |
+          PRINCIPAL_ID=$(az containerapp show --name ribpay-container-app --resource-group ribpayTestApiDeployResourceGroup --query "identity.principalId" --output tsv)
+          ACR_ID=$(az acr show --name ${{ secrets.REGISTRY_NAME }} --resource-group ribpayTestApiDeployResourceGroup --query "id" --output tsv)
+          az role assignment create --assignee $PRINCIPAL_ID --role AcrPull --scope $ACR_ID || echo "Role already assigned"
