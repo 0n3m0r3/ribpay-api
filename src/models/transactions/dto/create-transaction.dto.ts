@@ -101,4 +101,6 @@ export class CreateTransactionDto {
     required: true,
   })
   contract_id: string;
+
+  amount_calculated: number;
 }

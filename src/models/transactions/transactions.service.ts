@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { postOrder } from 'src/lib/oxlin';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -56,8 +56,12 @@ export class TransactionsService {
       throw new NotFoundException('Contract does not exist');
     }
 
+    if (createTransactionDto.currency !== 'EUR' && createTransactionDto.currency !==  null) {
+      throw new UnprocessableEntityException('Currency not supported');
+    }
+
     const order = await postOrder({
-      amount: createTransactionDto.amount_cents,
+      amount: createTransactionDto.amount_calculated,
       currency: 'EUR',
       label: createTransactionDto.label,
       instantPayment: createTransactionDto.instant_payment,
