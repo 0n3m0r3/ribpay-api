@@ -102,5 +102,6 @@ export class CreateTransactionDto {
   })
   contract_id: string;
 
+  @IsNotEmpty()
   amount_calculated: number;
 }
