@@ -10,7 +10,7 @@ import {
   RemoveUserFromAccountDto,
 } from './dto/update-user.dto';
 
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from './../../prisma/prisma.service';
 import { ResponseListUserDto } from './dto/response-user.dto';
 import { PaginationResponseDto } from '../dto/pagination-response.dto';
 import { UserListQueryDto } from './dto/query-list-user.dto';

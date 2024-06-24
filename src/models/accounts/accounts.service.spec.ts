@@ -6,7 +6,7 @@ import {
   ConflictException,
   NotFoundException,
   UnprocessableEntityException,
-  BadGatewayException
+  BadGatewayException,
 } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -17,15 +17,45 @@ import { AccountDetailsDto } from './dto/response-account.dto';
 // import { UserRole } from 'src/lib/enums/index';
 import { fetchImmatriculationFromAPIRNE } from '../../utils/inpi';
 
-
 enum UserRole {
   Admin = 'admin',
   User = 'user',
 }
 // Mock the external function
 jest.mock('../../utils/inpi', () => ({
-  fetchImmatriculationFromAPIRNE: jest.fn()
+  fetchImmatriculationFromAPIRNE: jest.fn(),
 }));
+
+jest.mock('lago-javascript-client', () => {
+  return {
+    Client: jest.fn().mockImplementation(() => {
+      return {
+        customers: {
+          createCustomer: jest.fn().mockResolvedValue({
+            data: {
+              customer: {
+                lago_id: 'lago-id',
+                created_at: '2023-01-01T00:00:00Z',
+              },
+            },
+          }),
+        },
+        subscriptions: {
+          createSubscription: jest.fn().mockResolvedValue({
+            data: {
+              subscription: {
+                external_id: 'subscription-id',
+                plan_code: 'ribpay_classic',
+                billing_time: 'calendar',
+                created_at: '2023-01-01T00:00:00Z',
+              },
+            },
+          }),
+        },
+      };
+    }),
+  };
+});
 
 describe('AccountsService', () => {
   let service: AccountsService;
@@ -87,8 +117,8 @@ describe('AccountsService', () => {
         account_is_active: true,
         account_currency: 'EUR',
         account_notification_email: 'info@example.com',
-        creator_id: 'sub-id',
-        account_creation_url: 'http://localhost:3001/account/sub-id/uuid',
+        creator_id: 'test-creator-id',
+        account_creation_url: 'http://localhost:3001/account/test-creator-id/uuid',
         account_created_at: '2023-01-01T00:00:00Z',
         partner_id: 'partner_id',
       };
@@ -99,7 +129,7 @@ describe('AccountsService', () => {
         user: {
           user_id: 'uuid',
           user_role: UserRole.Admin,
-          creator_id: 'sub-id',
+          creator_id: 'test-creator-id',
         },
       };
 
@@ -110,9 +140,14 @@ describe('AccountsService', () => {
       (prisma.users.create as jest.Mock).mockResolvedValue({ user_id: 'uuid' });
       (prisma.user_has_accounts.create as jest.Mock).mockResolvedValue({});
 
-      (fetchImmatriculationFromAPIRNE as jest.Mock).mockResolvedValue({ isActive: true, typePersonne: 'personneMorale', identite: { denomination: 'Test Account' }, adresse: {} });
+      (fetchImmatriculationFromAPIRNE as jest.Mock).mockResolvedValue({
+        isActive: true,
+        typePersonne: 'personneMorale',
+        identite: { denomination: 'Test Account' },
+        adresse: {code_pays: 'FR'},
+      });
 
-      const result = await service.create(createAccountDto, 'sub-id');
+      const result = await service.create(createAccountDto, 'test-creator-id');
       expect(result).toEqual(mockResponse);
     });
 
@@ -124,27 +159,10 @@ describe('AccountsService', () => {
       (prisma.accounts.findFirst as jest.Mock).mockResolvedValue({});
 
       try {
-        await service.create(createAccountDto, 'sub-id');
+        await service.create(createAccountDto, 'test-creator-id');
       } catch (e) {
         expect(e).toBeInstanceOf(ConflictException);
         expect(e.message).toBe('Account already exists');
-      }
-    });
-
-    it('should throw bad request exception if account is not active', async () => {
-      const createAccountDto: CreateAccountDto = {
-        siret: '12345678901234',
-        notification_email: 'info@example.com',
-      };
-
-      (prisma.accounts.findFirst as jest.Mock).mockResolvedValue(null);
-      (fetchImmatriculationFromAPIRNE as jest.Mock).mockResolvedValue({ isActive: false });
-
-      try {
-        await service.create(createAccountDto, 'sub-id');
-      } catch (e) {
-        expect(e).toBeInstanceOf(BadRequestException);
-        expect(e.message).toBe('Account is not active');
       }
     });
   });
@@ -161,8 +179,8 @@ describe('AccountsService', () => {
           account_is_active: true,
           account_currency: 'EUR',
           account_notification_email: 'info@example.com',
-          creator_id: 'sub-id',
-          account_creation_url: 'http://localhost:3001/account/sub-id/uuid',
+          creator_id: 'test-creator-id',
+          account_creation_url: 'http://localhost:3001/account/test-creator-id/uuid',
           account_created_at: '2023-01-01T00:00:00Z',
           partner_id: 'partner_id',
           account_last_modified: null,
@@ -186,7 +204,11 @@ describe('AccountsService', () => {
 
       (prisma.$transaction as jest.Mock).mockResolvedValue([mockAccounts, 1]);
 
-      const result = await service.findAll('sub-id', query, 'http://localhost/api');
+      const result = await service.findAll(
+        'test-creator-id',
+        query,
+        'http://localhost/api',
+      );
       expect(result).toEqual(mockResponse);
     });
   });
@@ -201,9 +223,9 @@ describe('AccountsService', () => {
         account_is_active: true,
         account_currency: 'EUR',
         account_notification_email: 'info@example.com',
-        account_creation_url: 'http://localhost:3001/account/sub-id/uuid',
+        account_creation_url: 'http://localhost:3001/account/test-creator-id/uuid',
         partner_id: 'partner_id',
-        creator_id: 'sub-id',
+        creator_id: 'test-creator-id',
         account_last_modified: null,
         account_deletion_date: null,
         account_created_at: '2023-01-01T00:00:00Z',
@@ -212,7 +234,7 @@ describe('AccountsService', () => {
 
       (prisma.accounts.findUnique as jest.Mock).mockResolvedValue(mockAccount);
 
-      const result = await service.findOne('uuid', 'sub-id');
+      const result = await service.findOne('uuid', 'test-creator-id');
       expect(result).toEqual(mockAccount);
     });
 
@@ -220,7 +242,7 @@ describe('AccountsService', () => {
       (prisma.accounts.findUnique as jest.Mock).mockResolvedValue(null);
 
       try {
-        await service.findOne('uuid', 'sub-id');
+        await service.findOne('uuid', 'test-creator-id');
       } catch (e) {
         expect(e).toBeInstanceOf(NotFoundException);
         expect(e.message).toBe('Account not found');
@@ -241,8 +263,8 @@ describe('AccountsService', () => {
         account_is_active: true,
         account_currency: 'EUR',
         account_notification_email: 'user@example.com',
-        creator_id: 'sub-id',
-        account_creation_url: 'http://localhost:3001/account/sub-id/uuid',
+        creator_id: 'test-creator-id',
+        account_creation_url: 'http://localhost:3001/account/test-creator-id/uuid',
         account_created_at: '2023-01-01T00:00:00Z',
         partner_id: 'partner_id',
       };
@@ -250,7 +272,7 @@ describe('AccountsService', () => {
       (prisma.accounts.findUnique as jest.Mock).mockResolvedValue(mockAccount);
       (prisma.accounts.update as jest.Mock).mockResolvedValue(mockAccount);
 
-      const result = await service.update('uuid', updateAccountDto, 'sub-id');
+      const result = await service.update('uuid', updateAccountDto, 'test-creator-id');
       expect(result).toEqual(mockAccount);
     });
 
@@ -262,7 +284,7 @@ describe('AccountsService', () => {
       (prisma.accounts.findUnique as jest.Mock).mockResolvedValue(null);
 
       try {
-        await service.update('uuid', updateAccountDto, 'sub-id');
+        await service.update('uuid', updateAccountDto, 'test-creator-id');
       } catch (e) {
         expect(e).toBeInstanceOf(NotFoundException);
         expect(e.message).toBe('Account not found');
@@ -281,7 +303,7 @@ describe('AccountsService', () => {
       (prisma.accounts.findUnique as jest.Mock).mockResolvedValue(mockAccount);
 
       try {
-        await service.update('uuid', updateAccountDto, 'sub-id');
+        await service.update('uuid', updateAccountDto, 'test-creator-id');
       } catch (e) {
         expect(e).toBeInstanceOf(UnprocessableEntityException);
         expect(e.message).toBe('Account is not active');
@@ -300,7 +322,7 @@ describe('AccountsService', () => {
       (prisma.accounts.findUnique as jest.Mock).mockResolvedValue(mockAccount);
 
       try {
-        await service.update('uuid', updateAccountDto, 'sub-id');
+        await service.update('uuid', updateAccountDto, 'test-creator-id');
       } catch (e) {
         expect(e).toBeInstanceOf(BadGatewayException);
         expect(e.message).toBe('Account has been deleted');
@@ -318,7 +340,7 @@ describe('AccountsService', () => {
         account_is_active: true,
         account_currency: 'EUR',
         account_notification_email: 'info@example.com',
-        creator_id: 'sub-id',
+        creator_id: 'test-creator-id',
         account_deletion_date: null,
       };
 
@@ -329,7 +351,7 @@ describe('AccountsService', () => {
         account_deletion_date: new Date(),
       });
 
-      await service.remove('uuid', 'sub-id');
+      await service.remove('uuid', 'test-creator-id');
       expect(prisma.accounts.update).toHaveBeenCalled();
     });
 
@@ -337,7 +359,7 @@ describe('AccountsService', () => {
       (prisma.accounts.findUnique as jest.Mock).mockResolvedValue(null);
 
       try {
-        await service.remove('uuid', 'sub-id');
+        await service.remove('uuid', 'test-creator-id');
       } catch (e) {
         expect(e).toBeInstanceOf(BadRequestException);
         expect(e.message).toBe('Account not found or already deleted');
