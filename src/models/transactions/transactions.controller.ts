@@ -35,6 +35,7 @@ export class TransactionsController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @Post()
   create(@Body() createTransactionDto: CreateTransactionDto, @Req() req: any) {
+    console.log("Create transaction : ", createTransactionDto);
     return this.transactionsService.create(
       createTransactionDto,
       req.subAccount,
