@@ -12,6 +12,7 @@ import { ValidateModule } from './models/validate/validate.module';
 import { InvoicesModule } from './models/invoices/invoices.module';
 import { ConfigModule } from '@nestjs/config';
 import { StatusModule } from './models/status/status.module';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { StatusModule } from './models/status/status.module';
     InvoicesModule,
     StatusModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [
     AppService,
     {

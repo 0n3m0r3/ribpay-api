@@ -14,7 +14,11 @@ export class EnhanceRequestInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
 
-    if (request.url.endsWith('/status') || request.url.endsWith('/')) {
+    if (
+      request.url.endsWith('/status') ||
+      request.url.endsWith('/') ||
+      request.url.endsWith('/health')
+    ) {
       return next.handle().pipe(tap(() => console.log('After...')));
     }
 

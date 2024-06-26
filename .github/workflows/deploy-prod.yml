@@ -47,16 +47,17 @@ jobs:
 
       - name: Build and push container image to registry
         run: |
-          docker build --platform linux/amd64 \
-            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL_PROD }} \
-            --build-arg INPI_USERNAME=${{ secrets.INPI_USERNAME_PROD }} \
-            --build-arg INPI_PASSWORD=${{ secrets.INPI_PASSWORD_PROD }} \
-            --build-arg OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID_PROD }} \
-            --build-arg OXLIN_CLIENT_SECRET=${{ secrets.OXLIN_CLIENT_SECRET_PROD }} \
-            --build-arg LAGO_API_KEY=${{ secrets.LAGO_API_KEY_PROD }} \
-            --build-arg AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING_PROD }} \
-            -t ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prod .
-          docker push ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prod
+          echo "FROM node:18
+          WORKDIR /app
+          COPY package*.json ./
+          RUN npm install
+          COPY . .
+          RUN npx prisma generate
+          RUN npm run build
+          EXPOSE 3000
+          CMD [\"npm\", \"run\", \"start:prod\"]" > Dockerfile
+          docker build --platform linux/amd64 -t ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prodV0 .
+          docker push ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prodV0
 
       - name: Set ACR credentials in Azure Container App with retry
         run: |
