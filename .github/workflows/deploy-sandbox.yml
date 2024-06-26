@@ -63,14 +63,27 @@ jobs:
             az containerapp registry set -n ribpay-sandbox-app -g api-ribpay-demo --server ribpaycontainerregistry.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} && break || sleep 15;
           done
 
-      - name: Create or update secrets in Azure Container App
+      - name: Assign Managed Identity
+        run: |
+          az containerapp identity assign \
+            --name ribpay-sandbox-app \
+            --resource-group api-ribpay-demo \
+            --system-assigned
+
+      - name: Set Key Vault access policy
         run: |
           principal_id=$(az containerapp show \
             --name ribpay-sandbox-app \
             --resource-group api-ribpay-demo \
             --query "identity.principalId" \
             --output tsv)
+          az role assignment create \
+            --role "Key Vault Secrets User" \
+            --assignee $principal_id \
+            --scope $(az keyvault show --name myKeyVaultRibpayDemo --query id --output tsv)
 
+      - name: Set secrets in Azure Container App
+        run: |
           az containerapp secret set \
             --name ribpay-sandbox-app \
             --resource-group api-ribpay-demo \
