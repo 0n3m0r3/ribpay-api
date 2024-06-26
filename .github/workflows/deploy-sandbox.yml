@@ -1,0 +1,75 @@
+name: Deploy to Sandbox
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npx prisma generate
+
+      - name: Run Prisma Migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_SANDBOX }}
+
+      - name: Build application
+        run: npm run build
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ribpaycontainerregistry
+
+      - name: Build and push container image to registry
+        run: |
+          docker build --platform linux/amd64 \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL_SANDBOX }} \
+            --build-arg INPI_USERNAME=${{ secrets.INPI_USERNAME_SANDBOX }} \
+            --build-arg INPI_PASSWORD=${{ secrets.INPI_PASSWORD_SANDBOX }} \
+            --build-arg OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID_SANDBOX }} \
+            --build-arg OXLIN_CLIENT_SECRET=${{ secrets.OXLIN_CLIENT_SECRET_SANDBOX }} \
+            --build-arg LAGO_API_KEY=${{ secrets.LAGO_API_KEY_SANDBOX }} \
+            --build-arg AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING_SANDBOX }} \
+            -t ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:sandbox .
+          docker push ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:sandbox
+
+      - name: Set ACR credentials in Azure Container App with retry
+        run: |
+          for i in {1..5}; do
+            az containerapp registry set -n ribpay-sandbox-app -g api-ribpay-demo --server ribpaycontainerregistry.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} && break || sleep 15;
+          done
+
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          registryUrl: ribpaycontainerregistry.azurecr.io
+          registryUsername: ${{ secrets.ACR_USERNAME }}
+          registryPassword: ${{ secrets.ACR_PASSWORD }}
+          containerAppName: ribpay-sandbox-app
+          resourceGroup: api-ribpay-demo
+          imageToBuild: ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:sandbox
