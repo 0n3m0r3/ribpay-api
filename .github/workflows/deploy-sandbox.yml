@@ -63,47 +63,38 @@ jobs:
             az containerapp registry set -n ribpay-sandbox-app -g api-ribpay-demo --server ribpaycontainerregistry.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} && break || sleep 15;
           done
 
-      - name: Assign Managed Identity
+      - name: Get managed identity principal ID
+        id: get-principal-id
         run: |
-          az containerapp identity assign \
-            --name ribpay-sandbox-app \
-            --resource-group api-ribpay-demo \
-            --system-assigned
+          principal_id=$(az containerapp show --name ribpay-sandbox-app --resource-group api-ribpay-demo --query "identity.principalId" --output tsv)
+          echo "principal_id=$principal_id" >> $GITHUB_ENV
 
-      - name: Set Key Vault access policy
+      - name: Assign Key Vault Secrets User role to managed identity
         run: |
-          principal_id=$(az containerapp show \
-            --name ribpay-sandbox-app \
-            --resource-group api-ribpay-demo \
-            --query "identity.principalId" \
-            --output tsv)
-          az role assignment create \
-            --role "Key Vault Secrets User" \
-            --assignee $principal_id \
-            --scope $(az keyvault show --name myKeyVaultRibpayDemo --query id --output tsv)
+          az role assignment create --role "Key Vault Secrets User" --assignee ${{ env.principal_id }} --scope /subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourceGroups/api-ribpay-demo/providers/Microsoft.KeyVault/vaults/myKeyVaultRibpayDemo
 
       - name: Set secrets in Azure Container App
         run: |
           az containerapp secret set \
             --name ribpay-sandbox-app \
             --resource-group api-ribpay-demo \
-            --secrets "db-url=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/DatabaseUrlSandbox,identityref:$principal_id" \
-                      "inpi-user=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/inpi-username-sandbox,identityref:$principal_id" \
-                      "inpi-pass=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/inpi-password-sandbox,identityref:$principal_id" \
-                      "oxlin-id=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/oxlin-client-id-sandbox,identityref:$principal_id" \
-                      "oxlin-secret=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/oxlin-client-secret-sandbox,identityref:$principal_id" \
-                      "lago-key=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/lago-api-key-sandbox,identityref:$principal_id" \
-                      "azure-conn-str=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/azure-storage-connection-string,identityref:$principal_id"
+            --secrets "db-url=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/DatabaseUrlProd,identityref:${{ env.principal_id }}" \
+                      "inpi-user=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/inpi-username-prod,identityref:${{ env.principal_id }}" \
+                      "inpi-pass=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/inpi-password-prod,identityref:${{ env.principal_id }}" \
+                      "oxlin-id=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/oxlin-client-id-prod,identityref:${{ env.principal_id }}" \
+                      "oxlin-secret=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/oxlin-client-secret-prod,identityref:${{ env.principal_id }}" \
+                      "lago-key=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/lago-api-key-prod,identityref:${{ env.principal_id }}" \
+                      "azure-conn-str=keyvaultref:https://mykeyvaultribpaydemo.vault.azure.net/secrets/azure-storage-connection-string,identityref:${{ env.principal_id }}"
 
-      - name: Update Container App Environment Variables
+      - name: Update environment variables in Azure Container App
         run: |
           az containerapp update \
             --name ribpay-sandbox-app \
             --resource-group api-ribpay-demo \
             --set-env-vars "DATABASE_URL=secretref:db-url" \
-                           "INPI_USERNAME=secretref:inpi-user" \
-                           "INPI_PASSWORD=secretref:inpi-pass" \
-                           "OXLIN_CLIENT_ID=secretref:oxlin-id" \
-                           "OXLIN_CLIENT_SECRET=secretref:oxlin-secret" \
-                           "LAGO_API_KEY=secretref:lago-key" \
-                           "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-conn-str"
+                       "INPI_USERNAME=secretref:inpi-user" \
+                       "INPI_PASSWORD=secretref:inpi-pass" \
+                       "OXLIN_CLIENT_ID=secretref:oxlin-id" \
+                       "OXLIN_CLIENT_SECRET=secretref:oxlin-secret" \
+                       "LAGO_API_KEY=secretref:lago-key" \
+                       "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-conn-str"
