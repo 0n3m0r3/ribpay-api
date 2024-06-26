@@ -74,3 +74,5 @@ jobs:
           containerAppName: ribpay-prod-app
           resourceGroup: api-ribpay-demo
           imageToBuild: ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prod
+          buildArguments: |
+            PRISMA_CLIENT=generate
