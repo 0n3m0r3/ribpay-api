@@ -1,20 +1,16 @@
-name: Trigger auto deployment for ribpay-container-app-sandbox
+name: Deploy to Sandbox
 
 on:
   push:
     branches:
-      - sandbox
-    paths:
-      - '**'
-      - '.github/workflows/ribpay-container-app-sandbox.yml'
-  workflow_dispatch:
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write # This is required for requesting the OIDC JWT Token
-      contents: read # Required when GH token is used to authenticate with private repo
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout to the branch
@@ -33,72 +29,41 @@ jobs:
       - name: Run Prisma Migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_SANDBOX }}
 
       - name: Build application
-        run: |
-          npm run build
+        run: npm run build
 
       - name: Azure Login
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.RIBPAYCONTAINERAPP_AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.RIBPAYCONTAINERAPP_AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.RIBPAYCONTAINERAPP_AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to Azure Container Registry
-        run: |
-          az acr login --name ribpaycontainerregistry
+        run: az acr login --name ribpaycontainerregistry
 
       - name: Build and push container image to registry
         run: |
-          echo "FROM node:18
-          WORKDIR /app
-          COPY package*.json ./
-          RUN npm install
-          COPY . .
-          RUN npx prisma generate
-          RUN npm run build
-          EXPOSE 3000
-          CMD [\"npm\", \"run\", \"start:prod\"]" > Dockerfile
-          docker build --platform linux/amd64 -t ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:sandbox .
+          docker build --platform linux/amd64 \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL_SANDBOX }} \
+            --build-arg INPI_USERNAME=${{ secrets.INPI_USERNAME_SANDBOX }} \
+            --build-arg INPI_PASSWORD=${{ secrets.INPI_PASSWORD_SANDBOX }} \
+            --build-arg OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID_SANDBOX }} \
+            --build-arg OXLIN_CLIENT_SECRET=${{ secrets.OXLIN_CLIENT_SECRET_SANDBOX }} \
+            --build-arg LAGO_API_KEY=${{ secrets.LAGO_API_KEY_SANDBOX }} \
+            --build-arg AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING_SANDBOX }} \
+            -t ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:sandbox .
           docker push ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:sandbox
 
-      - name: Create Container App Environment
+      - name: Set ACR credentials in Azure Container App with retry
         run: |
-          az containerapp env create \
-            --name ribpaySandboxContainerAppEnv \
-            --resource-group api-ribpay-demo \
-            --location eastus
+          for i in {1..5}; do
+            az containerapp registry set -n ribpay-sandbox-app -g api-ribpay-demo --server ribpaycontainerregistry.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} && break || sleep 15;
+          done
 
-      - name: Create Container App with Managed Identity
-        run: |
-          az containerapp create \
-            --name ribpay-sandbox-app \
-            --resource-group api-ribpay-demo \
-            --environment ribpaySandboxContainerAppEnv \
-            --image ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:sandbox \
-            --target-port 3000 \
-            --ingress 'external' \
-            --registry-server ribpaycontainerregistry.azurecr.io \
-            --registry-username ribpaycontainerregistry \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --system-assigned
-
-      - name: Assign Key Vault Secrets User Role
-        run: |
-          principal_id=$(az containerapp show \
-            --name ribpay-sandbox-app \
-            --resource-group api-ribpay-demo \
-            --query "identity.principalId" \
-            --output tsv)
-
-          az role assignment create \
-            --role "Key Vault Secrets User" \
-            --assignee $principal_id \
-            --scope $(az keyvault show --name myKeyVaultRibpayDemo --query id --output tsv)
-
-      - name: Set Secrets for Container App
+      - name: Create or update secrets in Azure Container App
         run: |
           principal_id=$(az containerapp show \
             --name ribpay-sandbox-app \
@@ -129,4 +94,3 @@ jobs:
                            "OXLIN_CLIENT_SECRET=secretref:oxlin-secret" \
                            "LAGO_API_KEY=secretref:lago-key" \
                            "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-conn-str"
-
