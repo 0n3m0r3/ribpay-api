@@ -56,8 +56,8 @@ jobs:
           RUN npm run build
           EXPOSE 3000
           CMD [\"npm\", \"run\", \"start:prod\"]" > Dockerfile
-          docker build --platform linux/amd64 -t ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prodV0 .
-          docker push ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prodV0
+          docker build --platform linux/amd64 -t ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prod .
+          docker push ribpaycontainerregistry.azurecr.io/ribpay-nestjs-api:prod
 
       - name: Set ACR credentials in Azure Container App with retry
         run: |
