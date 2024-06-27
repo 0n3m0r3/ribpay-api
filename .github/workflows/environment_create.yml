@@ -124,15 +124,11 @@ jobs:
 
       #     echo "- [View the deployed API](https://${{ env.ENVIRONMENT_NAME }}.azurewebsites.net/api/time)" >> $GITHUB_STEP_SUMMARY
 
-      - name: Verify Resource Group Exists
-        run: |
-          az group show --name ${{ env.RESOURCE_GROUP }} --output table
-
       - name: Create Container App Environment
         run: |
           az containerapp env create \
-            --name ribpay-api-deployment-demo-env \
-            --resource-group ${{ env.ENVIRONMENT_GROUP }} \
+            --name ${{ needs.config.outputs.type }}-env \
+            --resource-group ribpay-api-deployment-demo \
             --location ${{ vars.AZURE_LOCATION }}
 
       - name: Deploy Container App
