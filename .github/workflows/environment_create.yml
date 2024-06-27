@@ -97,25 +97,25 @@ jobs:
       #             "containerImage": "${{ secrets.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}"
       #         }' --only-show-errors
 
-      - name: Get Resource Group
-        shell: bash {0}
-        run: |
-          environment_rg=$(az devcenter dev environment show --name ${{ env.ENVIRONMENT_NAME }} \
-              --dev-center ${{ vars.AZURE_DEVCENTER }} --project ${{ vars.AZURE_PROJECT }} \
-              --only-show-errors --query resourceGroupId --output tsv 2>&1)
+      # - name: Get Resource Group
+      #   shell: bash {0}
+      #   run: |
+      #     environment_rg=$(az devcenter dev environment show --name ${{ env.ENVIRONMENT_NAME }} \
+      #         --dev-center ${{ vars.AZURE_DEVCENTER }} --project ${{ vars.AZURE_PROJECT }} \
+      #         --only-show-errors --query resourceGroupId --output tsv 2>&1)
 
-          if [ $? -ne 0 ]; then
-              echo "::error::az devcenter dev environment show command failed: $environment_rg"; exit 1
-          fi
+      #     if [ $? -ne 0 ]; then
+      #         echo "::error::az devcenter dev environment show command failed: $environment_rg"; exit 1
+      #     fi
 
-          environment_group=${environment_rg##*/}
-          environment_sub=${environment_rg%/resourceGroups*}
-          environment_sub=${environment_sub##*/}
+      #     environment_group=${environment_rg##*/}
+      #     environment_sub=${environment_rg%/resourceGroups*}
+      #     environment_sub=${environment_sub##*/}
 
-          echo "ENVIRONMENT_GROUP=$environment_group" >> $GITHUB_ENV
-          echo "ENVIRONMENT_SUB=$environment_sub" >> $GITHUB_ENV
+      #     echo "ENVIRONMENT_GROUP=$environment_group" >> $GITHUB_ENV
+      #     echo "ENVIRONMENT_SUB=$environment_sub" >> $GITHUB_ENV
 
-          echo "- [View environment resources in the Azure portal](https://portal.azure.com/#@${{ vars.AZURE_TENANT_ID }}/resource$environment_rg)" >> $GITHUB_STEP_SUMMARY
+      #     echo "- [View environment resources in the Azure portal](https://portal.azure.com/#@${{ vars.AZURE_TENANT_ID }}/resource$environment_rg)" >> $GITHUB_STEP_SUMMARY
 
       # - name: Deploy ADE.Tutorial
       #   run: |
