@@ -124,6 +124,13 @@ jobs:
 
       #     echo "- [View the deployed API](https://${{ env.ENVIRONMENT_NAME }}.azurewebsites.net/api/time)" >> $GITHUB_STEP_SUMMARY
 
+      - name: Transform type to lowercase
+        id: lowercase_type
+        uses: cloudposse/github-action-string-transformer@main
+        with:
+          operation: "lowercase"
+          input-string: ${{ needs.config.outputs.type }}
+
       - name: Create Container App Environment
         run: |
           az containerapp env create \
@@ -134,7 +141,7 @@ jobs:
       - name: Deploy Container App
         run: |
           az containerapp create \
-            --name ${{ toLower(needs.config.outputs.type) }} \
+            --name ${{ steps.lowercase_type.outputs.output-string }} \
             --resource-group ribpay-api-deployment-demo \
             --environment ${{ needs.config.outputs.type }}-env \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }} \
@@ -150,7 +157,6 @@ jobs:
                         "OXLIN_CLIENT_SECRET=${{ secrets.OXLIN_CLIENT_SECRET }}" \
                         "LAGO_API_KEY=${{ secrets.LAGO_API_KEY }}" \
                         "AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
-
 
       - name: Output deployment information
         run: |
