@@ -8,7 +8,7 @@ export class AppController {
 
   @Get('/')
   getRoot(): string {
-    console.log('The new API running, yeah!');
+    console.log('A');
     return 'The new API running, yeah!';
   }
 }
