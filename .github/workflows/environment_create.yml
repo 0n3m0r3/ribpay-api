@@ -69,7 +69,7 @@ jobs:
       - name: Build and push container image to registry
         run: |
           echo "FROM node:18
-          WORKDIR /app
+          WORKDIR /src/app
           COPY package*.json ./
           RUN npm install
           COPY . .
