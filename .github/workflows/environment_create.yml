@@ -129,13 +129,13 @@ jobs:
           az containerapp env create \
             --name ${{ needs.config.outputs.type }}-env \
             --resource-group ribpay-api-deployment-demo \
-            --location ${{ vars.AZURE_LOCATION }}
+            --location westeurope
 
       - name: Deploy Container App
         run: |
           az containerapp create \
-            --name ${{ env.ENVIRONMENT_NAME }} \
-            --resource-group ${{ env.ENVIRONMENT_GROUP }} \
+            --name ${{ needs.config.outputs.type }} \
+            --resource-group ribpay-api-deployment-demo \
             --environment ${{ env.ENVIRONMENT_NAME }}-env \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }} \
             --target-port 3000 \
