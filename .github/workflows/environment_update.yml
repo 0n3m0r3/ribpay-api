@@ -74,6 +74,7 @@ jobs:
 
       - name: Build and push container image to registry
         run: |
+          cd src
           echo "FROM node:18
           WORKDIR /app
           COPY package*.json ./
