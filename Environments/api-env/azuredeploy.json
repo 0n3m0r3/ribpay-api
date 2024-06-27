@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.28.1.47646",
+      "templateHash": "8473230506199140280"
+    }
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Container App"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location to deploy the environment resources"
+      }
+    },
+    "containerImage": {
+      "type": "string",
+      "metadata": {
+        "description": "Container image to deploy"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to apply to environment resources"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2022-03-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('name') + '-env')]",
+        "configuration": {
+          "ingress": {
+            "external": true,
+            "targetPort": 3000
+          }
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "[parameters('name')]",
+              "image": "[parameters('containerImage')]",
+              "resources": {
+                "cpu": 0.5,
+                "memory": "1.0Gi"
+              }
+            }
+          ]
+        }
+      },
+      "tags": "[parameters('tags')]"
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2022-03-01",
+      "name": "[concat(parameters('name'), '-env')]",
+      "location": "[parameters('location')]",
+      "properties": {}
+    }
+  ]
+}
