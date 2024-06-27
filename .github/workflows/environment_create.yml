@@ -92,7 +92,7 @@ jobs:
       #         --name ${{ env.ENVIRONMENT_NAME }} --environment-type ${{ env.ENVIRONMENT_TYPE }} \
       #         --dev-center ${{ vars.AZURE_DEVCENTER }} --project ${{ vars.AZURE_PROJECT }} \
       #         --catalog-name ${{ vars.AZURE_CATALOG }} --environment-definition-name ${{ vars.AZURE_CATALOG_ITEM }} \
-      #         --parameters '{ 
+      #         --parameters '{
       #             "name": "${{ env.ENVIRONMENT_NAME }}",
       #             "containerImage": "${{ secrets.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}"
       #         }' --only-show-errors
@@ -123,6 +123,14 @@ jobs:
       #         --subscription ${{ env.ENVIRONMENT_SUB }} --resource-group ${{ env.ENVIRONMENT_GROUP }}
 
       #     echo "- [View the deployed API](https://${{ env.ENVIRONMENT_NAME }}.azurewebsites.net/api/time)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Get Resource Group
+        run: |
+          environment_rg=$(az group show --name ${{ env.ENVIRONMENT_GROUP }} --query id --output tsv 2>&1)
+          if [ $? -ne 0 ]; then
+              echo "::error::az group show command failed: $environment_rg"; exit 1
+          fi
+          echo "ENVIRONMENT_GROUP=$environment_rg" >> $GITHUB_ENV
 
       - name: Create Container App Environment
         run: |
