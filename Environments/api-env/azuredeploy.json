@@ -43,7 +43,7 @@
       "name": "[parameters('name')]",
       "location": "[parameters('location')]",
       "properties": {
-        "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('name') + '-env')]",
+        "environmentId": "[resourceId('Microsoft.App/managedEnvironments', concat(parameters('name'), '-env'))]",
         "configuration": {
           "ingress": {
             "external": true,
