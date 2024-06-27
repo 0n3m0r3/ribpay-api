@@ -134,7 +134,7 @@ jobs:
       - name: Deploy Container App
         run: |
           az containerapp create \
-            --name ${{ needs.config.outputs.type }} \
+            --name ${{ toLower(needs.config.outputs.type) }} \
             --resource-group ribpay-api-deployment-demo \
             --environment ${{ needs.config.outputs.type }}-env \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }} \
@@ -142,7 +142,15 @@ jobs:
             --ingress 'external' \
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
-            --registry-password ${{ secrets.AZURE_ACR_PASSWORD }}
+            --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
+            --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
+                       "INPI_USERNAME=${{ secrets.INPI_USERNAME }}" \
+                        "INPI_PASSWORD=${{ secrets.INPI_PASSWORD }}" \
+                        "OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID }}" \
+                        "OXLIN_CLIENT_SECRET=${{ secrets.OXLIN_CLIENT_SECRET }}" \
+                        "LAGO_API_KEY=${{ secrets.LAGO_API_KEY }}" \
+                        "AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+
 
       - name: Output deployment information
         run: |
