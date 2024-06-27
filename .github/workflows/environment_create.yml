@@ -136,7 +136,7 @@ jobs:
           az containerapp create \
             --name ${{ needs.config.outputs.type }} \
             --resource-group ribpay-api-deployment-demo \
-            --environment ${{ env.ENVIRONMENT_NAME }}-env \
+            --environment ${{ needs.config.outputs.type }}-env \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }} \
             --target-port 3000 \
             --ingress 'external' \
