@@ -126,7 +126,7 @@ jobs:
 
       - name: Get Resource Group
         run: |
-          environment_rg=$(az group show --name ${{ env.ENVIRONMENT_GROUP }} --query id --output tsv 2>&1)
+          environment_rg=$(az group show --name ribpay-api-deployment-demo --query id --output tsv 2>&1)
           if [ $? -ne 0 ]; then
               echo "::error::az group show command failed: $environment_rg"; exit 1
           fi
