@@ -42,14 +42,19 @@ jobs:
 
       - name: Install dependencies
         run: |
+          cd src
           npm install
           npx prisma generate
 
       - name: Build application
-        run: npm run build
+        run: |
+          cd src
+          npm run build
 
       - name: Run Prisma Migrations
-        run: npx prisma migrate deploy
+        run: |
+          cd src
+          npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
 
