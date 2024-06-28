@@ -29,6 +29,8 @@ jobs:
       ENVIRONMENT_TYPE: ${{ needs.config.outputs.type }}
       UNIQUE_SUFFIX: ${{ github.event.number || github.ref_name }}
 
+      echo "Deleting environment: ${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }}"
+
     steps:
       - name: Install DevCenter CLI Extension
         run: az extension add --name devcenter --upgrade
