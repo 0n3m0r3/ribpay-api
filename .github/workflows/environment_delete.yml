@@ -47,6 +47,21 @@ jobs:
           operation: "lowercase"
           input-string: ${{ needs.config.outputs.type }}
 
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{ vars.ACR_NAME }} --username ${{ secrets.AZURE_ACR_USERNAME }} --password ${{ secrets.AZURE_ACR_PASSWORD }}
+
+      - name: Delete Image from ACR
+        run: |
+          az acr repository delete --name ${{ vars.ACR_NAME }} --repository ribpay-nestjs-api --image ${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} --yes
+
+      - name: Delete PostgreSQL Database
+        run: |
+          az postgres db delete --name ${{ env.DATABASE_NAME }} --server-name ${{ secrets.POSTGRES_SERVER_NAME }} --resource-group ribpay-api-demo --yes
+        env:
+          POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
+          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+
       - name: Delete Container App
         run: |
           az containerapp delete --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} --resource-group ribpay-api-deployment-demo --yes
@@ -54,10 +69,3 @@ jobs:
       - name: Delete Container App Environment
         run: |
           az containerapp env delete --name ${{ needs.config.outputs.type }}-env-${{ env.UNIQUE_SUFFIX }} --resource-group ribpay-api-deployment-demo --yes
-
-      - name: Log in to Azure Container Registry
-        run: az acr login --name ${{ vars.ACR_NAME }} --username ${{ secrets.AZURE_ACR_USERNAME }} --password ${{ secrets.AZURE_ACR_PASSWORD }}
-
-      - name: Delete Image from ACR
-        run: |
-          az acr repository delete --name ${{ vars.ACR_NAME }} --repository ribpay-nestjs-api --image ${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} --yes

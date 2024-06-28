@@ -44,6 +44,18 @@ jobs:
           npm install
           npx prisma generate
 
+      - name: Create PostgreSQL Database
+        run: |
+          az postgres db create --name ${{ env.DATABASE_NAME }} --server-name ${{ secrets.POSTGRES_SERVER_NAME }} --resource-group api-ribpay-demo
+        env:
+          POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
+          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+
+      - name: Set DATABASE_URL
+        run: |
+          echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_ADMIN_USER }}:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:5432/${{ env.DATABASE_NAME }}" >> $GITHUB_ENV
+
       - name: Build application
         run: |
           cd src
