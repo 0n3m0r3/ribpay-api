@@ -54,14 +54,14 @@ jobs:
         run: |
           az acr repository delete --name ${{ vars.ACR_NAME }} --repository ribpay-nestjs-api --image ${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} --yes
 
-      - name: Delete PostgreSQL Database
-        run: |
-          az postgres db delete --name ${{ env.DATABASE_NAME }} --server-name ${{ secrets.POSTGRES_SERVER_NAME }} --resource-group ribpay-api-demo --yes
-        env:
-          POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
-          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-          DATABASE_NAME: ribpay_${{ github.event.number || github.ref_name || 'prod' }}_db
+      # - name: Delete PostgreSQL Database
+      #   run: |
+      #     az postgres db delete --name ${{ env.DATABASE_NAME }} --server-name ${{ secrets.POSTGRES_SERVER_NAME }} --resource-group ribpay-api-demo --yes
+      #   env:
+      #     POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
+      #     POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+      #     POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      #     DATABASE_NAME: ribpay_${{ github.event.number || github.ref_name || 'prod' }}_db
 
       - name: Delete Container App
         run: |

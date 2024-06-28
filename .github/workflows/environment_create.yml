@@ -52,17 +52,17 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Create PostgreSQL Database
-        run: |
-          az postgres db create --name ${{ env.DATABASE_NAME }} --server-name ${{ secrets.POSTGRES_SERVER_NAME }} --resource-group api-ribpay-demo
-        env:
-          POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
-          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      # - name: Create PostgreSQL Database
+      #   run: |
+      #     az postgres db create --name ${{ env.DATABASE_NAME }} --server-name ${{ secrets.POSTGRES_SERVER_NAME }} --resource-group api-ribpay-demo
+      #   env:
+      #     POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
+      #     POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+      #     POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
 
-      - name: Set DATABASE_URL
-        run: |
-          echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_ADMIN_USER }}:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:5432/${{ env.DATABASE_NAME }}" >> $GITHUB_ENV
+      # - name: Set DATABASE_URL
+      #   run: |
+      #     echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_ADMIN_USER }}:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:5432/${{ env.DATABASE_NAME }}" >> $GITHUB_ENV
 
       - name: Build application
         run: |
@@ -121,7 +121,7 @@ jobs:
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
-            --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
                        "INPI_USERNAME=${{ secrets.INPI_USERNAME }}" \
                         "INPI_PASSWORD=${{ secrets.INPI_PASSWORD }}" \
                         "OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID }}" \
