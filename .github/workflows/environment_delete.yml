@@ -52,7 +52,7 @@ jobs:
 
       - name: Delete Image Tag from ACR
         run: |
-          az acr repository delete --name ${{ secrets.ACR_NAME }} --repository ribpay-nestjs-api --tag ${{ env.ENVIRONMENT_NAME }} --yes
+          az acr repository delete --name ${{ vars.ACR_NAME }} --repository ribpay-nestjs-api --tag ${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} --yes
 
       # - name: Delete PostgreSQL Database
       #   run: |
