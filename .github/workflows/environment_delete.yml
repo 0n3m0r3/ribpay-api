@@ -50,9 +50,9 @@ jobs:
       - name: Log in to Azure Container Registry
         run: az acr login --name ${{ vars.ACR_NAME }} --username ${{ secrets.AZURE_ACR_USERNAME }} --password ${{ secrets.AZURE_ACR_PASSWORD }}
 
-      - name: Delete Image from ACR
+      - name: Delete Image Tag from ACR
         run: |
-          az acr repository delete --name ${{ vars.ACR_NAME }} --image ribpay-nestjs-api/${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} --yes
+          az acr repository delete --name ${{ secrets.ACR_NAME }} --repository ribpay-nestjs-api --tag ${{ env.ENVIRONMENT_NAME }} --yes
 
       # - name: Delete PostgreSQL Database
       #   run: |
