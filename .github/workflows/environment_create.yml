@@ -104,13 +104,13 @@ jobs:
       - name: Retrieve secrets from Azure Key Vault
         run: |
           echo "Retrieving secrets from Azure Key Vault"
-          DATABASE_URL=$(az keyvault secret show --name DATABASE_URL --vault-name your-keyvault-name --query value -o tsv)
-          INPI_USERNAME=$(az keyvault secret show --name inpi-username --vault-name your-keyvault-name --query value -o tsv)
-          INPI_PASSWORD=$(az keyvault secret show --name inpi-password --vault-name your-keyvault-name --query value -o tsv)
-          OXLIN_CLIENT_ID=$(az keyvault secret show --name oxlin-client-id-dev --vault-name your-keyvault-name --query value -o tsv)
-          OXLIN_CLIENT_SECRET=$(az keyvault secret show --name oxlin-client-secret-dev --vault-name your-keyvault-name --query value -o tsv)
-          LAGO_API_KEY=$(az keyvault secret show --name lago-api-key-dev --vault-name your-keyvault-name --query value -o tsv)
-          AZURE_STORAGE_CONNECTION_STRING=$(az keyvault secret show --name azure-storage-connection-string --vault-name your-keyvault-name --query value -o tsv)
+          DATABASE_URL=$(az keyvault secret show --name DATABASE_URL --vault-name ribpayapi-keyvault --query value -o tsv)
+          INPI_USERNAME=$(az keyvault secret show --name inpi-username --vault-name ribpayapi-keyvault --query value -o tsv)
+          INPI_PASSWORD=$(az keyvault secret show --name inpi-password --vault-name ribpayapi-keyvault --query value -o tsv)
+          OXLIN_CLIENT_ID=$(az keyvault secret show --name oxlin-client-id-dev --vault-name ribpayapi-keyvault --query value -o tsv)
+          OXLIN_CLIENT_SECRET=$(az keyvault secret show --name oxlin-client-secret-dev --vault-name ribpayapi-keyvault --query value -o tsv)
+          LAGO_API_KEY=$(az keyvault secret show --name lago-api-key-dev --vault-name ribpayapi-keyvault --query value -o tsv)
+          AZURE_STORAGE_CONNECTION_STRING=$(az keyvault secret show --name azure-storage-connection-string --vault-name ribpayapi-keyvault --query value -o tsv)
 
           echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
           echo "INPI_USERNAME=$INPI_USERNAME" >> $GITHUB_ENV
