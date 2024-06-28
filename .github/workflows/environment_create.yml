@@ -138,13 +138,19 @@ jobs:
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
+            --secrets "inpi-username=https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username" \
+            --secrets "inpi-password=https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password" \
+            --secrets "oxlin-client-id-dev=https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev" \
+            --secrets "oxlin-client-secret-dev=https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev" \
+            --secrets "lago-api-key-dev=https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev" \
+            --secrets "azure-storage-connection-string=https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string" \
             --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
-                       "INPI_USERNAME=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:system" \
-                        "INPI_PASSWORD=${{ secrets.INPI_PASSWORD }}" \
-                        "OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID }}" \
-                        "OXLIN_CLIENT_SECRET=${{ secrets.OXLIN_CLIENT_SECRET }}" \
-                        "LAGO_API_KEY=${{ secrets.LAGO_API_KEY }}" \
-                        "AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+                       "INPI_USERNAME=secretref:inpi-username" \
+                       "INPI_PASSWORD=secretref:inpi-password" \
+                       "OXLIN_CLIENT_ID=secretref:oxlin-client-id-dev" \
+                       "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret-dev" \
+                       "LAGO_API_KEY=secretref:lago-api-key-dev" \
+                       "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage-connection-string"
 
       - name: Output deployment information
         run: |
