@@ -56,9 +56,6 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
 
-      - name: Install DevCenter CLI Extension
-        run: az extension add --name devcenter --upgrade
-
       - name: Az CLI login
         uses: azure/login@v1
         with:
