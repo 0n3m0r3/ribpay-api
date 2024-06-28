@@ -44,7 +44,7 @@ jobs:
           cd src
           npm install
           npx prisma generate
-          
+
       - name: Az CLI login
         uses: azure/login@v1
         with:
@@ -76,7 +76,6 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
 
-
       - name: Log in to Azure Container Registry
         run: az acr login --name ${{ vars.ACR_NAME }} --username ${{ secrets.AZURE_ACR_USERNAME }} --password ${{ secrets.AZURE_ACR_PASSWORD }}
 
@@ -102,6 +101,19 @@ jobs:
           operation: "lowercase"
           input-string: ${{ needs.config.outputs.type }}
 
+      - name: Retrieve secrets from Azure Key Vault
+        id: azure-keyvault-secrets
+        uses: Azure/get-keyvault-secrets@v1
+        with:
+          keyvault: ribpayapi-keyvault
+          secrets: |
+            inpi-username
+            inpi-password
+            oxlin-client-id-dev
+            oxlin-client-secret-dev
+            lago-api-key-dev
+            azure-storage-connection-string
+
       - name: Create Container App Environment
         run: |
           az containerapp env create \
@@ -122,7 +134,7 @@ jobs:
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
             --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
-                       "INPI_USERNAME=${{ secrets.INPI_USERNAME }}" \
+                       "INPI_USERNAME=${{ steps.azure-keyvault-secrets.outputs['inpi-username'] }}" \
                         "INPI_PASSWORD=${{ secrets.INPI_PASSWORD }}" \
                         "OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID }}" \
                         "OXLIN_CLIENT_SECRET=${{ secrets.OXLIN_CLIENT_SECRET }}" \
