@@ -61,6 +61,7 @@ jobs:
           POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
           POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          DATABASE_NAME: ribpay_${{ github.event.number || github.ref_name || 'prod' }}_db
 
       - name: Delete Container App
         run: |

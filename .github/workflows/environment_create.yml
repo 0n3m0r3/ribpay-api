@@ -29,6 +29,7 @@ jobs:
       ENVIRONMENT_NAME: ${{ needs.config.outputs.name }}
       ENVIRONMENT_TYPE: ${{ needs.config.outputs.type }}
       UNIQUE_SUFFIX: ${{ github.event.number || github.ref_name }}
+      DATABASE_NAME: ribpay_${{ github.event.number || github.ref_name || 'prod' }}_db
 
     steps:
       - uses: actions/checkout@v3
@@ -119,7 +120,7 @@ jobs:
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
-            --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
+            --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
                        "INPI_USERNAME=${{ secrets.INPI_USERNAME }}" \
                         "INPI_PASSWORD=${{ secrets.INPI_PASSWORD }}" \
                         "OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID }}" \
