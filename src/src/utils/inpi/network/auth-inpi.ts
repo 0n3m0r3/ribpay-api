@@ -9,7 +9,8 @@ let _token = '';
 const getToken = async () => {
   const username = process.env.INPI_USERNAME;
   const password = process.env.INPI_PASSWORD;
-
+  console.log('INPI_USERNAME', username);
+  console.log('INPI_PASSWORD', password)
   const response = await httpClient({
     method: 'POST',
     url: 'https://registre-national-entreprises.inpi.fr/api/sso/login',
