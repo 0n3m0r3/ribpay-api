@@ -16,7 +16,7 @@ async function bootstrap() {
     }),
   );
 
-  console.log('A');
+  console.log('C');
   const config = new DocumentBuilder()
     .setTitle('Ribpay API')
     .setDescription('The Ribpay API description')
