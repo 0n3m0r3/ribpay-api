@@ -139,7 +139,7 @@ jobs:
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
             --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
-                       "INPI_USERNAME=${{ env.INPI_USERNAME }}" \
+                       "INPI_USERNAME=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:system" \
                         "INPI_PASSWORD=${{ secrets.INPI_PASSWORD }}" \
                         "OXLIN_CLIENT_ID=${{ secrets.OXLIN_CLIENT_ID }}" \
                         "OXLIN_CLIENT_SECRET=${{ secrets.OXLIN_CLIENT_SECRET }}" \
