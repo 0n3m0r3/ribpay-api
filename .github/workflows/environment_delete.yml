@@ -27,6 +27,7 @@ jobs:
     env:
       ENVIRONMENT_NAME: ${{ needs.config.outputs.name }}
       ENVIRONMENT_TYPE: ${{ needs.config.outputs.type }}
+      UNIQUE_SUFFIX: ${{ github.event.number || github.ref_name }}
 
     steps:
       - name: Install DevCenter CLI Extension
@@ -48,8 +49,8 @@ jobs:
 
       - name: Delete Container App
         run: |
-          az containerapp delete --name ${{ steps.lowercase_type.outputs.output-string }} --resource-group ribpay-api-deployment-demo --yes
+          az containerapp delete --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} --resource-group ribpay-api-deployment-demo --yes
 
       - name: Delete Container App Environment
         run: |
-          az containerapp env delete --name ${{ needs.config.outputs.type }}-env --resource-group ribpay-api-deployment-demo --yes
+          az containerapp env delete --name ${{ needs.config.outputs.type }}-env-${{ env.UNIQUE_SUFFIX }} --resource-group ribpay-api-deployment-demo --yes

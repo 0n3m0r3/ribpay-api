@@ -28,12 +28,10 @@ jobs:
     env:
       ENVIRONMENT_NAME: ${{ needs.config.outputs.name }}
       ENVIRONMENT_TYPE: ${{ needs.config.outputs.type }}
+      UNIQUE_SUFFIX: ${{ github.event.number || github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
-
-      # - name: Build ADE.Tutorial
-      #   run: dotnet publish ./ADE.Tutorial -c Release -o ./publish && (cd ./publish && zip -r ../publish.zip .)
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -83,46 +81,8 @@ jobs:
           RUN npm run build
           EXPOSE 3000
           CMD [\"npm\", \"run\", \"start:prod\"]" > Dockerfile
-          docker build --platform linux/amd64 -t ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }} .
-          docker push ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}
-
-      # - name: Create Environment
-      #   run: |
-      #     az devcenter dev environment create \
-      #         --name ${{ env.ENVIRONMENT_NAME }} --environment-type ${{ env.ENVIRONMENT_TYPE }} \
-      #         --dev-center ${{ vars.AZURE_DEVCENTER }} --project ${{ vars.AZURE_PROJECT }} \
-      #         --catalog-name ${{ vars.AZURE_CATALOG }} --environment-definition-name ${{ vars.AZURE_CATALOG_ITEM }} \
-      #         --parameters '{
-      #             "name": "${{ env.ENVIRONMENT_NAME }}",
-      #             "containerImage": "${{ secrets.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}"
-      #         }' --only-show-errors
-
-      # - name: Get Resource Group
-      #   shell: bash {0}
-      #   run: |
-      #     environment_rg=$(az devcenter dev environment show --name ${{ env.ENVIRONMENT_NAME }} \
-      #         --dev-center ${{ vars.AZURE_DEVCENTER }} --project ${{ vars.AZURE_PROJECT }} \
-      #         --only-show-errors --query resourceGroupId --output tsv 2>&1)
-
-      #     if [ $? -ne 0 ]; then
-      #         echo "::error::az devcenter dev environment show command failed: $environment_rg"; exit 1
-      #     fi
-
-      #     environment_group=${environment_rg##*/}
-      #     environment_sub=${environment_rg%/resourceGroups*}
-      #     environment_sub=${environment_sub##*/}
-
-      #     echo "ENVIRONMENT_GROUP=$environment_group" >> $GITHUB_ENV
-      #     echo "ENVIRONMENT_SUB=$environment_sub" >> $GITHUB_ENV
-
-      #     echo "- [View environment resources in the Azure portal](https://portal.azure.com/#@${{ vars.AZURE_TENANT_ID }}/resource$environment_rg)" >> $GITHUB_STEP_SUMMARY
-
-      # - name: Deploy ADE.Tutorial
-      #   run: |
-      #     az functionapp deployment source config-zip --name ${{ env.ENVIRONMENT_NAME }} --src publish.zip \
-      #         --subscription ${{ env.ENVIRONMENT_SUB }} --resource-group ${{ env.ENVIRONMENT_GROUP }}
-
-      #     echo "- [View the deployed API](https://${{ env.ENVIRONMENT_NAME }}.azurewebsites.net/api/time)" >> $GITHUB_STEP_SUMMARY
+          docker build --platform linux/amd64 -t ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} .
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }}
 
       - name: Transform type to lowercase
         id: lowercase_type
@@ -134,17 +94,17 @@ jobs:
       - name: Create Container App Environment
         run: |
           az containerapp env create \
-            --name ${{ needs.config.outputs.type }}-env \
-            --resource-group ribpay-api-deployment-demo \
+            --name ${{ needs.config.outputs.type }}-env-${{ env.UNIQUE_SUFFIX }} \
+            --resource-group ${{ vars.AZURE_RESSOURCE_GROUP}} \
             --location westeurope
 
       - name: Deploy Container App
         run: |
           az containerapp create \
-            --name ${{ steps.lowercase_type.outputs.output-string }} \
-            --resource-group ribpay-api-deployment-demo \
-            --environment ${{ needs.config.outputs.type }}-env \
-            --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }} \
+            --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
+            --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} \
+            --environment ${{ needs.config.outputs.type }}-env-${{ env.UNIQUE_SUFFIX }} \
+            --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
             --target-port 3000 \
             --ingress 'external' \
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \

@@ -32,6 +32,7 @@ jobs:
     env:
       ENVIRONMENT_NAME: ${{ needs.config.outputs.name }}
       ENVIRONMENT_TYPE: ${{ needs.config.outputs.type }}
+      UNIQUE_SUFFIX: ${{ github.event.number || github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
@@ -84,8 +85,8 @@ jobs:
           RUN npm run build
           EXPOSE 3000
           CMD [\"npm\", \"run\", \"start:prod\"]" > Dockerfile
-          docker build --platform linux/amd64 -t ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }} .
-          docker push ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}
+          docker build --platform linux/amd64 -t ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} .
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }}
 
       - name: Transform type to lowercase
         id: lowercase_type
@@ -97,9 +98,9 @@ jobs:
       - name: Update Container App
         run: |
           az containerapp update \
-            --name ${{ steps.lowercase_type.outputs.output-string }} \
-            --resource-group ribpay-api-deployment-demo \
-            --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }} \
+            --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
+            --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} \
+            --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
             --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
                           "INPI_USERNAME=${{ secrets.INPI_USERNAME }}" \
                           "INPI_PASSWORD=${{ secrets.INPI_PASSWORD }}" \
