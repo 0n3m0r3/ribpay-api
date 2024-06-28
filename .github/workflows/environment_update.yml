@@ -95,6 +95,11 @@ jobs:
           operation: "lowercase"
           input-string: ${{ needs.config.outputs.type }}
 
+      - name: Search for Container App
+        id: search_container_app
+        run: |
+          az containerapp list --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} --query "[?name=='${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }}']"
+
       - name: Update Container App
         run: |
           az containerapp update \
