@@ -39,31 +39,17 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Get Resource Group
-        shell: bash {0}
+      - name: Transform type to lowercase
+        id: lowercase_type
+        uses: cloudposse/github-action-string-transformer@main
+        with:
+          operation: "lowercase"
+          input-string: ${{ needs.config.outputs.type }}
+
+      - name: Delete Container App
         run: |
-          environment_rg=$(az devcenter dev environment show --name ${{ env.ENVIRONMENT_NAME }} \
-              --dev-center ${{ vars.AZURE_DEVCENTER }} --project ${{ vars.AZURE_PROJECT }} \
-              --only-show-errors --query resourceGroupId --output tsv 2>&1)
-
-          if [ $? -ne 0 ]; then
-              echo "::error::az devcenter dev environment show command failed: $environment_rg"; exit 1
-          fi
-
-          environment_group=${environment_rg##*/}
-          echo "ENVIRONMENT_GROUP=$environment_group" >> $GITHUB_ENV
-
-      - name: Delete Azure Container App
-        run: |
-          az containerapp delete --name ${{ env.ENVIRONMENT_NAME }} \
-            --resource-group ${{ env.ENVIRONMENT_GROUP }} --yes
+          az containerapp delete --name ${{ steps.lowercase_type.outputs.output-string }} --resource-group ribpay-api-deployment-demo --yes
 
       - name: Delete Container App Environment
         run: |
-          az containerapp env delete --name ${{ env.ENVIRONMENT_NAME }}-env \
-            --resource-group ${{ env.ENVIRONMENT_GROUP }} --yes
-
-      - name: Delete Environment
-        run: |
-          az devcenter dev environment delete --name ${{ env.ENVIRONMENT_NAME }} \
-              --dev-center ${{ vars.AZURE_DEVCENTER }} --project ${{ vars.AZURE_PROJECT }} --yes
+          az containerapp env delete --name ${{ needs.config.outputs.type }}-env --resource-group ribpay-api-deployment-demo --yes
