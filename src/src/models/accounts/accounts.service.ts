@@ -31,6 +31,7 @@ export class AccountsService {
     createAccountDto: CreateAccountDto,
     subAccount: string,
   ): Promise<AccountCreateResponseDto> {
+    console.log('lago api key', process.env.LAGO_API_KEY);
     const client = Client(process.env.LAGO_API_KEY);
     // Return an error if the company already exists
     const existingAccount = await this.prisma.accounts.findFirst({
