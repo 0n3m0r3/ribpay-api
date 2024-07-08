@@ -52,12 +52,12 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Assign Managed Identity and Set RBAC Permissions
-        run: |
-          managed_identity_id=$(az identity show --name ribpay-managed-identity --resource-group ribpay-api-deployment-demo --query 'id' -o tsv)
-          principal_id=$(az identity show --name ribpay-managed-identity --resource-group ribpay-api-deployment-demo --query 'principalId' -o tsv)
-          az role assignment create --role "Key Vault Secrets User" --assignee $principal_id --scope /subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.KeyVault/vaults/ribpayapi-keyvault
-          echo "MANAGED_IDENTITY_ID=$managed_identity_id" >> $GITHUB_ENV
+      # - name: Assign Managed Identity and Set RBAC Permissions
+      #   run: |
+      #     managed_identity_id=$(az identity show --name ribpay-managed-identity --resource-group ribpay-api-deployment-demo --query 'id' -o tsv)
+      #     principal_id=$(az identity show --name ribpay-managed-identity --resource-group ribpay-api-deployment-demo --query 'principalId' -o tsv)
+      #     az role assignment create --role "Key Vault Secrets User" --assignee $principal_id --scope /subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.KeyVault/vaults/ribpayapi-keyvault
+      #     echo "MANAGED_IDENTITY_ID=$managed_identity_id" >> $GITHUB_ENV
 
       - name: Build application
         run: |
@@ -108,7 +108,7 @@ jobs:
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
-            --user-assigned "$managed_identity_id" \
+            --user-assigned "b536b96f-948e-43e9-bb50-5fbe303aaf69" \
             --secrets "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:$managed_identity_id" \
                       "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:$managed_identity_id" \
                       "oxlin-client-id-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev,identityref:$managed_identity_id" \
