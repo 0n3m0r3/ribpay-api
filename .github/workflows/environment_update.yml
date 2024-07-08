@@ -100,7 +100,7 @@ jobs:
       - name: Set Environment Variables
         id: set_env_vars
         run: |
-          if [[ "${{ needs.config.outputs.type }}" == "prod" ]]; then
+          if [[ "${{ needs.config.outputs.type }}" == "Prod" ]]; then
             echo "INPI_USERNAME=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
             echo "INPI_PASSWORD=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
             echo "OXLIN_CLIENT_ID=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
