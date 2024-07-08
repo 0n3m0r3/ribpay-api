@@ -101,12 +101,12 @@ jobs:
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
-            --secrets "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username" \
-                      "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password" \
-                      "oxlin-client-id-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev" \
-                      "oxlin-client-secret-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev" \
-                      "lago-api-key-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev" \
-                      "azure-storage-connection-string=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string" \
+            --secrets "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:d6c577d3-45da-462a-801c-202c9bd1d29f" \
+                      "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:d6c577d3-45da-462a-801c-202c9bd1d29f" \
+                      "oxlin-client-id-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev,identityref:d6c577d3-45da-462a-801c-202c9bd1d29f" \
+                      "oxlin-client-secret-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:d6c577d3-45da-462a-801c-202c9bd1d29f" \
+                      "lago-api-key-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:d6c577d3-45da-462a-801c-202c9bd1d29f" \
+                      "azure-storage-connection-string=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:d6c577d3-45da-462a-801c-202c9bd1d29f" \
             --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
                        "INPI_USERNAME=secretref:inpi-username" \
                        "INPI_PASSWORD=secretref:inpi-password" \
