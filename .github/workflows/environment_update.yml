@@ -116,24 +116,41 @@ jobs:
             echo "AZURE_STORAGE_CONNECTION_STRING=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
           fi
 
+      - name: Set Secrets
+        run: |
+          if [[ "${{ needs.config.outputs.type }}" == "Prod" ]]; then
+            az containerapp secret set \
+              --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
+              --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} \
+              --secrets "INPI_USERNAME=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "INPI_PASSWORD=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "OXLIN_CLIENT_ID=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "OXLIN_CLIENT_SECRET=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "LAGO_API_KEY=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "AZURE_STORAGE_CONNECTION_STRING=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity"
+          else
+            az containerapp secret set \
+              --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
+              --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} \
+              --secrets "INPI_USERNAME=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "INPI_PASSWORD=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "OXLIN_CLIENT_ID=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "OXLIN_CLIENT_SECRET=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "LAGO_API_KEY=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "AZURE_STORAGE_CONNECTION_STRING=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity"
+
       - name: Update Container App
         run: |
           az containerapp update \
             --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
             --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
-            --secrets "inpi-username=${{ env.INPI_USERNAME }}" \
-                      "inpi-password=${{ env.INPI_PASSWORD }}" \
-                      "oxlin-client-id=${{ env.OXLIN_CLIENT_ID }}" \
-                      "oxlin-client-secret=${{ env.OXLIN_CLIENT_SECRET }}" \
-                      "lago-api-key=${{ env.LAGO_API_KEY }}" \
-                      "azure-storage-connection-string=${{ env.AZURE_STORAGE_CONNECTION_STRING }}" \
             --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
                           "INPI_USERNAME=secretref:inpi-username" \
                           "INPI_PASSWORD=secretref:inpi-password" \
                           "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
                           "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
-                          "LAGO_API_KEY=secretref:lago-api-key" \
+                          "LAGO_API_KEY=secretref:azure-storage-connection-string" \
                           "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage-connection-string"
 
       - name: Output deployment information
