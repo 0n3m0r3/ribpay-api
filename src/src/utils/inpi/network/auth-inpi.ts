@@ -7,6 +7,8 @@ config();
 let _token = '';
 
 const getToken = async () => {
+  console.log('inpi login', process.env.INPI_USERNAME);
+  console.log('inpi login', process.env.INPI_PASSWORD);
   const username = process.env.INPI_USERNAME;
   const password = process.env.INPI_PASSWORD;
 
