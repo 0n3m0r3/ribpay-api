@@ -151,7 +151,7 @@ jobs:
                           "INPI_PASSWORD=secretref:inpi-password" \
                           "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
                           "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
-                          "LAGO_API_KEY=secretref:azure-storage-connection-string" \
+                          "LAGO_API_KEY=secretref:lago-api-key" \
                           "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage"
 
       - name: Output deployment information
