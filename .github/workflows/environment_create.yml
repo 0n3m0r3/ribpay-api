@@ -119,19 +119,19 @@ jobs:
           echo "LAGO_API_KEY=$LAGO_API_KEY" >> $GITHUB_ENV
           echo "AZURE_STORAGE_CONNECTION_STRING=$AZURE_STORAGE_CONNECTION_STRING" >> $GITHUB_ENV
 
-      - name: Create Container App Environment
-        run: |
-          az containerapp env create \
-            --name ${{ needs.config.outputs.type }}-env-${{ env.UNIQUE_SUFFIX }} \
-            --resource-group ${{ vars.AZURE_RESSOURCE_GROUP}} \
-            --location westeurope
+      # - name: Create Container App Environment
+      #   run: |
+      #     az containerapp env create \
+      #       --name ${{ needs.config.outputs.type }}-env-${{ env.UNIQUE_SUFFIX }} \
+      #       --resource-group ${{ vars.AZURE_RESSOURCE_GROUP}} \
+      #       --location westeurope
 
       - name: Deploy Container App
         run: |
           az containerapp create \
             --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
             --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} \
-            --environment ${{ needs.config.outputs.type }}-env-${{ env.UNIQUE_SUFFIX }} \
+            --environment pr-container-app-env \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
             --target-port 3000 \
             --ingress 'external' \
