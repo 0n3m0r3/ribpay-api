@@ -111,16 +111,16 @@ jobs:
             --user-assigned "/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
             --secrets "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                       "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                      "oxlin-client-id-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                      "oxlin-client-secret-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                      "lago-api-key-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                      "oxlin-client-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                      "oxlin-client-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                      "lago-api-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                       "azure-storage-connection-string=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
             --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
                        "INPI_USERNAME=secretref:inpi-username" \
                        "INPI_PASSWORD=secretref:inpi-password" \
-                       "OXLIN_CLIENT_ID=secretref:oxlin-client-id-dev" \
-                       "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret-dev" \
-                       "LAGO_API_KEY=secretref:lago-api-key-dev" \
+                       "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
+                       "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
+                       "LAGO_API_KEY=secretref:lago-api-key" \
                        "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage-connection-string"
 
       - name: Output deployment information

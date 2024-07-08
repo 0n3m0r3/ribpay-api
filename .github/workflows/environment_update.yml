@@ -106,12 +106,14 @@ jobs:
             echo "OXLIN_CLIENT_ID=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
             echo "OXLIN_CLIENT_SECRET=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
             echo "LAGO_API_KEY=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
+            echo "AZURE_STORAGE_CONNECTION_STRING=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
           else
             echo "INPI_USERNAME=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
             echo "INPI_PASSWORD=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
             echo "OXLIN_CLIENT_ID=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
             echo "OXLIN_CLIENT_SECRET=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
             echo "LAGO_API_KEY=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
+            echo "AZURE_STORAGE_CONNECTION_STRING=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" >> $GITHUB_ENV
           fi
 
       - name: Update Container App
@@ -120,13 +122,19 @@ jobs:
             --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
             --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
+            --secrets "inpi-username=${{ env.INPI_USERNAME }}" \
+                      "inpi-password=${{ env.INPI_PASSWORD }}" \
+                      "oxlin-client-id=${{ env.OXLIN_CLIENT_ID }}" \
+                      "oxlin-client-secret=${{ env.OXLIN_CLIENT_SECRET }}" \
+                      "lago-api-key=${{ env.LAGO_API_KEY }}" \
+                      "azure-storage-connection-string=${{ env.AZURE_STORAGE_CONNECTION_STRING }}" \
             --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
-                          "INPI_USERNAME=${{ env.INPI_USERNAME }}" \
-                          "INPI_PASSWORD=${{ env.INPI_PASSWORD }}" \
-                          "OXLIN_CLIENT_ID=${{ env.OXLIN_CLIENT_ID }}" \
-                          "OXLIN_CLIENT_SECRET=${{ env.OXLIN_CLIENT_SECRET }}" \
-                          "LAGO_API_KEY=${{ env.LAGO_API_KEY }}" \
-                          "AZURE_STORAGE_CONNECTION_STRING=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity"
+                          "INPI_USERNAME=secretref:inpi-username" \
+                          "INPI_PASSWORD=secretref:inpi-password" \
+                          "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
+                          "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
+                          "LAGO_API_KEY=secretref:lago-api-key" \
+                          "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage-connection-string"
 
       - name: Output deployment information
         run: |
