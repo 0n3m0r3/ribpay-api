@@ -138,7 +138,7 @@ jobs:
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
-            --secrets "inpi-username=https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username" \
+            --secrets "inpi-username=https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username/0963848b0b8b4467b16e42c543ffc38a" \
             --secrets "inpi-password=https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password" \
             --secrets "oxlin-client-id-dev=https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev" \
             --secrets "oxlin-client-secret-dev=https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev" \
