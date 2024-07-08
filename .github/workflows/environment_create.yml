@@ -13,12 +13,12 @@ concurrency: ${{ github.event.number || github.ref_name }}
 
 jobs:
   config:
-    if: github.event_name == 'pull_request' || github.event.ref_type == 'branch'
+    if: github.event_name == 'pull_request' || github event.ref_type == 'branch'
     name: Get Configuration
     uses: ./.github/workflows/environment_config.yml
 
   create_env:
-    if: github.event_name == 'pull_request' || github.event.ref_type == 'branch'
+    if: github.event_name == 'pull_request' || github event.ref_type == 'branch'
     name: Create ${{ needs.config.outputs.type }} Environment
     runs-on: ubuntu-latest
 
@@ -51,18 +51,6 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      # - name: Create PostgreSQL Database
-      #   run: |
-      #     az postgres db create --name ${{ env.DATABASE_NAME }} --server-name ${{ secrets.POSTGRES_SERVER_NAME }} --resource-group api-ribpay-demo
-      #   env:
-      #     POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
-      #     POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
-      #     POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-
-      # - name: Set DATABASE_URL
-      #   run: |
-      #     echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_ADMIN_USER }}:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:5432/${{ env.DATABASE_NAME }}" >> $GITHUB_ENV
 
       - name: Build application
         run: |
@@ -101,31 +89,6 @@ jobs:
           operation: "lowercase"
           input-string: ${{ needs.config.outputs.type }}
 
-      - name: Retrieve secrets from Azure Key Vault
-        run: |
-          echo "Retrieving secrets from Azure Key Vault"
-          INPI_USERNAME=$(az keyvault secret show --name inpi-username --vault-name ribpayapi-keyvault --query value -o tsv)
-          INPI_PASSWORD=$(az keyvault secret show --name inpi-password --vault-name ribpayapi-keyvault --query value -o tsv)
-          OXLIN_CLIENT_ID=$(az keyvault secret show --name oxlin-client-id-dev --vault-name ribpayapi-keyvault --query value -o tsv)
-          OXLIN_CLIENT_SECRET=$(az keyvault secret show --name oxlin-client-secret-dev --vault-name ribpayapi-keyvault --query value -o tsv)
-          LAGO_API_KEY=$(az keyvault secret show --name lago-api-key-dev --vault-name ribpayapi-keyvault --query value -o tsv)
-          AZURE_STORAGE_CONNECTION_STRING=$(az keyvault secret show --name azure-storage-connection-string --vault-name ribpayapi-keyvault --query value -o tsv)
-
-
-          echo "INPI_USERNAME=$INPI_USERNAME" >> $GITHUB_ENV
-          echo "INPI_PASSWORD=$INPI_PASSWORD" >> $GITHUB_ENV
-          echo "OXLIN_CLIENT_ID=$OXLIN_CLIENT_ID" >> $GITHUB_ENV
-          echo "OXLIN_CLIENT_SECRET=$OXLIN_CLIENT_SECRET" >> $GITHUB_ENV
-          echo "LAGO_API_KEY=$LAGO_API_KEY" >> $GITHUB_ENV
-          echo "AZURE_STORAGE_CONNECTION_STRING=$AZURE_STORAGE_CONNECTION_STRING" >> $GITHUB_ENV
-
-      # - name: Create Container App Environment
-      #   run: |
-      #     az containerapp env create \
-      #       --name ${{ needs.config.outputs.type }}-env-${{ env.UNIQUE_SUFFIX }} \
-      #       --resource-group ${{ vars.AZURE_RESSOURCE_GROUP}} \
-      #       --location westeurope
-
       - name: Deploy Container App
         run: |
           az containerapp create \
@@ -138,12 +101,12 @@ jobs:
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
-            --secrets "inpi-username=https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username/0963848b0b8b4467b16e42c543ffc38a" \
-            --secrets "inpi-password=https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password" \
-            --secrets "oxlin-client-id-dev=https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev" \
-            --secrets "oxlin-client-secret-dev=https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev" \
-            --secrets "lago-api-key-dev=https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev" \
-            --secrets "azure-storage-connection-string=https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string" \
+            --secrets "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username" \
+                      "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password" \
+                      "oxlin-client-id-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev" \
+                      "oxlin-client-secret-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev" \
+                      "lago-api-key-dev=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev" \
+                      "azure-storage-connection-string=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string" \
             --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
                        "INPI_USERNAME=secretref:inpi-username" \
                        "INPI_PASSWORD=secretref:inpi-password" \
