@@ -138,6 +138,7 @@ jobs:
                         "OXLIN_CLIENT_SECRET=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                         "LAGO_API_KEY=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                         "AZURE_STORAGE_CONNECTION_STRING=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity"
+          fi
 
       - name: Update Container App
         run: |
