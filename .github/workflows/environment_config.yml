@@ -55,7 +55,7 @@ jobs:
               'AZURE_CATALOG_ITEM': 'a value of: FunctionApp',
               'AZURE_TENANT_ID': 'your Azure tenant Id (GUID)',
               'AZURE_SUBSCRIPTION_ID': 'your Azure subscription Id (GUID)',
-              'AZURE_RESSOURCE_GROUP': 'your Azure resource group'
+              'AZURE_RESOURCE_GROUP': 'your Azure resource group'
           }
 
           try:
