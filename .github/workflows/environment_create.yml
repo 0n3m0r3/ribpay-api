@@ -133,35 +133,6 @@ jobs:
                        "LAGO_API_KEY=secretref:lago-api-key" \
                        "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage"
 
-      - name: Configure API Management
-        run: |
-          # Create API if it does not exist
-          az apim api create --resource-group ribpayTestApiDeployResourceGroup --service-name ribpay-api-test-deploy --api-id api-${{ env.UNIQUE_SUFFIX }} --path '/api-${{ env.UNIQUE_SUFFIX }}' --display-name 'API for PR ${{ env.UNIQUE_SUFFIX }}' --service-url 'https://${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }}.azurecontainerapps.io' || echo "API already exists"
-
-          # Add policies
-          az apim api policy set --resource-group ribpayTestApiDeployResourceGroup --service-name ribpay-api-test-deploy --api-id api-${{ env.UNIQUE_SUFFIX }} --xml-content '
-          <policies>
-              <inbound>
-                  <base />
-                  <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid." require-expiration-time="true" require-scheme="Bearer" require-signed-tokens="true" clock-skew="25">
-                      <openid-config url="{{b2cpolicyEnterpriseMachine-well-known-openid}}" />
-                      <audiences>
-                          <audience>{{backend-api-application-client-id}}</audience>
-                      </audiences>
-                  </validate-jwt>
-                  <set-backend-service base-url="https://${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }}.azurecontainerapps.io" />
-              </inbound>
-              <backend>
-                  <base />
-              </backend>
-              <outbound>
-                  <base />
-              </outbound>
-              <on-error>
-                  <base />
-              </on-error>
-          </policies>'
-
       - name: Output deployment information
         run: |
           echo "- [View the deployed API](https://${{ env.ENVIRONMENT_NAME }}.azurecontainerapps.io)" >> $GITHUB_STEP_SUMMARY
