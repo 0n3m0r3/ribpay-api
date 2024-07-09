@@ -28,11 +28,9 @@ jobs:
       ENVIRONMENT_NAME: ${{ needs.config.outputs.name }}
       ENVIRONMENT_TYPE: ${{ needs.config.outputs.type }}
       UNIQUE_SUFFIX: ${{ github.event.number || github.ref_name }}
+      DATABASE_NAME: ribpay_${{ github.event.number || github.ref_name || 'prod' }}_db
 
     steps:
-      - name: Install DevCenter CLI Extension
-        run: az extension add --name devcenter --upgrade
-
       - name: Az CLI login
         uses: azure/login@v1
         with:
@@ -54,15 +52,17 @@ jobs:
         run: |
           az acr repository delete --name ${{ vars.ACR_NAME }} --image ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} --yes
 
-      # - name: Delete PostgreSQL Database
-      #   run: |
-      #     az postgres db delete --name ${{ env.DATABASE_NAME }} --server-name ${{ secrets.POSTGRES_SERVER_NAME }} --resource-group ribpay-api-demo --yes
-      #   env:
-      #     POSTGRES_ADMIN_USER: ${{ secrets.POSTGRES_ADMIN_USER }}
-      #     POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
-      #     POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-      #     DATABASE_NAME: ribpay_${{ github.event.number || github.ref_name || 'prod' }}_db
-
       - name: Delete Container App
         run: |
           az containerapp delete --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} --resource-group ribpay-api-deployment-demo --yes
+
+      - name: Delete PostgreSQL Database
+        run: |
+          az postgres flexible-server db delete \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --server-name ${{ secrets.POSTGRES_SERVER_NAME }} \
+            --database-name ${{ env.DATABASE_NAME }} \
+            --yes
+        env:
+          POSTGRES_ADMIN_USERNAME: ${{ secrets.POSTGRES_ADMIN_USERNAME }}
+          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}

@@ -59,6 +59,16 @@ jobs:
       #     az role assignment create --role "Key Vault Secrets User" --assignee $principal_id --scope /subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.KeyVault/vaults/ribpayapi-keyvault
       #     echo "MANAGED_IDENTITY_ID=$managed_identity_id" >> $GITHUB_ENV
 
+      - name: Create PostgreSQL Database
+        run: |
+          az postgres flexible-server db create \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --server-name ${{ secrets.POSTGRES_SERVER_NAME }} \
+            --database-name ${{ env.DATABASE_NAME }}
+        env:
+          POSTGRES_ADMIN_USERNAME: ${{ secrets.POSTGRES_ADMIN_USERNAME }}
+          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+
       - name: Build application
         run: |
           cd src
@@ -69,7 +79,7 @@ jobs:
           cd src
           npx prisma migrate deploy
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+          DATABASE_URL: postgres://${{ secrets.POSTGRES_ADMIN_USERNAME }}:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ secrets.POSTGRES_SERVER_NAME }}.postgres.database.azure.com:5432/${{ env.DATABASE_NAME }}?sslmode=require
 
       - name: Log in to Azure Container Registry
         run: az acr login --name ${{ vars.ACR_NAME }} --username ${{ secrets.AZURE_ACR_USERNAME }} --password ${{ secrets.AZURE_ACR_PASSWORD }}
@@ -100,7 +110,7 @@ jobs:
         run: |
           az containerapp create \
             --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
-            --resource-group ${{ vars.AZURE_RESSOURCE_GROUP }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --environment pr-container-app-env \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
             --target-port 3000 \
@@ -115,7 +125,7 @@ jobs:
                       "oxlin-client-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                       "lago-api-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                       "azure-storage=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-            --env-vars "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" \
+            --env-vars "DATABASE_URL=postgres://${{ secrets.POSTGRES_ADMIN_USERNAME }}:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ secrets.POSTGRES_SERVER_NAME }}.postgres.database.azure.com:5432/${{ env.DATABASE_NAME }}?sslmode=require" \
                        "INPI_USERNAME=secretref:inpi-username" \
                        "INPI_PASSWORD=secretref:inpi-password" \
                        "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
