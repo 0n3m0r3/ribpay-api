@@ -8,6 +8,6 @@ export class AppController {
 
   @Get('/')
   getRoot(): string {
-    return 'test prod';
+    return 'test prod 2';
   }
 }
