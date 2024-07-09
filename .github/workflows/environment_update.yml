@@ -9,6 +9,11 @@ on:
     types: [synchronize]
     paths:
       - "src/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
 
 concurrency: ${{ github.event.number || github.ref_name }}
 

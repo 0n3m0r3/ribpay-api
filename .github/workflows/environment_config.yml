@@ -15,17 +15,20 @@ on:
         description: "The type of the environment"
         value: ${{ jobs.env_config.outputs.type }}
 
-env:
+# env:
   # format: ci-[branch|pr]-[branch name|pr number]-suffix
   # ENVIRONMENT_NAME: ci-${{ github.event_name == 'pull_request' && 'pr' || 'branch' }}-${{ github.event_name == 'pull_request' && github.event.number || github.event_name == 'push' && github.ref_name || github.event.ref }}-${{ github.event.repository.id }}
-  ENVIRONMENT_NAME: ci-${{ github.event_name == 'pull_request' && 'pr' || 'unknown' }}-${{ github.event_name == 'pull_request' && github.event.number || 'unknown' }}-${{ github.event.repository.id }}
+  # ENVIRONMENT_NAME: ci-${{ github.event_name == 'pull_request' && 'pr' || 'unknown' }}-${{ github.event_name == 'pull_request' && github.event.number || 'unknown' }}-${{ github.event.repository.id }}
   # branch/Pull request | Environment Type
   # --------------------------------------
   # feature branches    | Dev
   # PR feature -> main  | Test
   # main branch         | Prod
   # ENVIRONMENT_TYPE: ${{ github.event_name == 'push' && (github.event.ref == 'refs/heads/main' && 'Prod' || 'Dev') || github.event_name == 'pull_request' && (github.event.pull_request.base.ref == 'main' && 'Test') || 'Dev' }}
-  ENVIRONMENT_TYPE: ${{ github.event_name == 'pull_request' && (github.event.pull_request.base.ref == 'main' && 'Test')}}
+  # ENVIRONMENT_TYPE: ${{ github.event_name == 'pull_request' && (github.event.pull_request.base.ref == 'main' && 'Test')}}
+env:
+  ENVIRONMENT_NAME: ci-${{ github.event_name == 'pull_request' && 'pr' || 'unknown' }}-${{ github.event_name == 'pull_request' && github.event.number || 'unknown' }}-${{ github.event.repository.id }}
+  ENVIRONMENT_TYPE: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'Prod') || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && 'Test') || 'Dev' }}
 jobs:
   env_config:
     name: Resolve Configuration
