@@ -62,7 +62,7 @@ jobs:
       - name: Create PostgreSQL Database
         run: |
           az postgres flexible-server db create \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --resource-group api-ribpay-demo \
             --server-name ${{ secrets.POSTGRES_SERVER_NAME }} \
             --database-name ${{ env.DATABASE_NAME }}
         env:
