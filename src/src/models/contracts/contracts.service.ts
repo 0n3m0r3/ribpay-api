@@ -578,11 +578,14 @@ export class ContractsService {
     if (!contract) {
       throw new NotFoundException('Contract not found');
     }
-
+    try{
     await deleteAlias({ alias_id: contract.contract_alias_id });
     await deleteAuthorizedAccount({
       authorized_account_id: contract.contract_merchant_id,
     });
+    }catch(err){
+      throw new BadRequestException('Error deleting contract');
+    }
 
     return await this.prisma.contracts.delete({
       where: { contract_id: id, creator_id: subAccount },
