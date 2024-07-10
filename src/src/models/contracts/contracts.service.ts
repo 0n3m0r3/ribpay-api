@@ -3,20 +3,22 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateContractDto } from './dto/create-contract.dto';
-import { UpdateContractDto } from './dto/update-contract.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
 import {
   postAlias,
   postAuthorizedAccounts,
   postAuthorizedAccountsPersonnePhysique,
   searchProviders,
+  deleteAlias,
+  deleteAuthorizedAccount,
 } from 'src/lib/oxlin';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { isDev } from '../../utils/is-dev';
 import { generateReference } from '../../utils/uuid-helpers';
-import { ContractListQueryDto } from './dto/query-list-contract.dto';
 import { PaginationResponseDto } from '../dto/pagination-response.dto';
+import { CreateContractDto } from './dto/create-contract.dto';
+import { ContractListQueryDto } from './dto/query-list-contract.dto';
 import { ContractListResponseDto } from './dto/response-contract.dto';
+import { UpdateContractDto } from './dto/update-contract.dto';
 
 @Injectable()
 export class ContractsService {
@@ -569,6 +571,19 @@ export class ContractsService {
   }
 
   async remove(id: string, subAccount: string) {
+    const contract = await this.prisma.contracts.findUnique({
+      where: { contract_id: id, creator_id: subAccount },
+    });
+
+    if (!contract) {
+      throw new NotFoundException('Contract not found');
+    }
+
+    await deleteAlias({ alias_id: contract.contract_alias_id });
+    await deleteAuthorizedAccount({
+      authorized_account_id: contract.contract_merchant_id,
+    });
+
     return await this.prisma.contracts.delete({
       where: { contract_id: id, creator_id: subAccount },
     });

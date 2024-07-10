@@ -138,3 +138,16 @@ export async function searchProviders({ iban }) {
 
   return providers[0].providers;
 }
+
+
+export async function deleteAlias({ alias_id }) {
+  const alias = await oxlin.accountAliases.delete(alias_id);
+  return alias;
+}
+
+export async function deleteAuthorizedAccount({ authorized_account_id }) {
+  const authorizedAccount = await oxlin.authorizedAccounts.delete(
+    authorized_account_id,
+  );
+  return authorizedAccount;
+}
