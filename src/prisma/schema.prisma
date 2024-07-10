@@ -19,10 +19,10 @@ model accounts {
   account_created_at         DateTime            @default(now()) @db.Timestamptz(6)
   account_currency           String              @db.VarChar(255)
   account_notification_email String              @db.VarChar(255)
-  account_creation_url       String?             @db.VarChar(255)
-  account_blob_storage_url   String?             @db.VarChar(255)
   partner_id                 String?             @db.Uuid
   creator_id                 String              @db.VarChar(255)
+  account_creation_url       String?             @db.VarChar(255)
+  account_blob_storage_url   String?             @db.VarChar(255)
   partners                   partners?           @relation(fields: [partner_id], references: [partner_id], onDelete: NoAction, onUpdate: NoAction)
   billing_addresses          billing_addresses[]
   contracts                  contracts[]
@@ -35,7 +35,6 @@ model accounts {
 
 model billing_addresses {
   billing_address_id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  billing_address_created_at              DateTime? @default(now()) @db.Timestamptz(6)
   billing_address_last_modified           DateTime? @db.Timestamptz(6)
   billing_address                         String    @db.VarChar(255)
   billing_address_complement_localisation String?   @db.VarChar(255)
@@ -50,12 +49,12 @@ model billing_addresses {
   billing_address_pays                    String?   @db.VarChar(255)
   account_id                              String    @db.Uuid
   creator_id                              String    @db.VarChar(255)
+  billing_address_created_at              DateTime? @default(now()) @db.Timestamptz(6)
   accounts                                accounts  @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model contracts {
   contract_id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  contract_created_at       DateTime?      @default(now()) @db.Timestamptz(6)
   contract_last_modified    DateTime?      @db.Timestamptz(6)
   contract_type             String         @db.VarChar(255)
   contract_number           String         @db.VarChar(255)
@@ -65,6 +64,7 @@ model contracts {
   terminal_id               String?        @db.Uuid
   account_id                String         @db.Uuid
   creator_id                String         @db.VarChar(255)
+  contract_created_at       DateTime?      @default(now()) @db.Timestamptz(6)
   accounts                  accounts       @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
   terminals                 terminals?     @relation(fields: [terminal_id], references: [terminal_id], onDelete: NoAction, onUpdate: NoAction)
   transactions              transactions[]
@@ -118,14 +118,14 @@ model partners {
 
 model terminals {
   terminal_id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  terminal_created_at             DateTime?      @default(now()) @db.Timestamptz(6)
   terminal_last_modified          DateTime?      @db.Timestamptz(6)
   terminal_label                  String         @db.VarChar(255)
   terminal_favorite_contract_type String?        @db.VarChar(255)
-  terminal_subscription_id        String         @db.VarChar(255)
-  terminal_subscription_type      String         @db.VarChar(255)
   account_id                      String         @db.Uuid
   creator_id                      String         @db.VarChar(255)
+  terminal_subscription_id        String         @db.VarChar(255)
+  terminal_subscription_type      String         @db.VarChar(255)
+  terminal_created_at             DateTime?      @default(now()) @db.Timestamptz(6)
   contracts                       contracts[]
   installments                    installments[]
   accounts                        accounts       @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
@@ -137,6 +137,7 @@ model transactions {
   transaction_last_modified      DateTime?     @db.Timestamptz(6)
   transaction_id_oxlin           String        @db.VarChar(255)
   transaction_status             String        @db.VarChar(255)
+  transaction_type               String        @db.VarChar(255)
   transaction_instant_payment    Boolean
   transaction_amount_without_vat Int
   transaction_amount_cents       Int
@@ -172,7 +173,6 @@ model user_has_accounts {
 
 model users {
   user_id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_created_at    DateTime            @default(now()) @db.Timestamptz(6)
   user_last_modified DateTime?           @db.Timestamptz(6)
   user_first_name    String?             @db.VarChar(255)
   user_last_name     String?             @db.VarChar(255)
@@ -182,5 +182,6 @@ model users {
   user_phone         String?             @db.VarChar(255)
   user_email         String?             @db.VarChar(255)
   creator_id         String              @db.VarChar(255)
+  user_created_at    DateTime            @default(now()) @db.Timestamptz(6)
   user_has_accounts  user_has_accounts[]
 }

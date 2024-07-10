@@ -86,6 +86,7 @@ export class TransactionsService {
         transaction_auth_url: `https://www.ribpay.page/authorize/${order.id}`,
         transaction_redirect_url: createTransactionDto.redirect_url,
         transaction_notification_url: createTransactionDto.notification_url,
+        transaction_type: contract.contract_type,
         account_id: createTransactionDto.account_id,
         terminal_id: createTransactionDto.terminal_id,
         contract_id: createTransactionDto.contract_id,
