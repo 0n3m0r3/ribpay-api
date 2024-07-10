@@ -171,6 +171,6 @@ export class ContractsController {
   @HttpCode(204)
   @Delete(':id')
   remove(@Param() params: IdDTO, @Req() req: any) {
-    this.contractsService.remove(params.id, req.subAccount);
+    return this.contractsService.remove(params.id, req.subAccount);
   }
 }

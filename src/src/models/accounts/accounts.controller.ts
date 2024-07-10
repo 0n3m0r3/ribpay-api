@@ -130,6 +130,6 @@ export class AccountsController {
   @HttpCode(204)
   @Delete(':id')
   remove(@Param() params: IdDTO, @Req() req: any) {
-    this.accountsService.remove(params.id, req.subAccount);
+    return this.accountsService.remove(params.id, req.subAccount);
   }
 }

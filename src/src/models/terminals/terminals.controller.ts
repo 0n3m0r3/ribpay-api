@@ -150,6 +150,6 @@ export class TerminalsController {
   @ApiResponse({ status: 404, description: 'Terminal not found' })
   @Delete(':id')
   remove(@Param() params: IdDTO, @Req() req: any) {
-    this.terminalsService.remove(params.id, req.subAccount);
+    return this.terminalsService.remove(params.id, req.subAccount);
   }
 }
