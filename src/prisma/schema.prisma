@@ -111,7 +111,7 @@ model invoices {
 model partners {
   partner_id       String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   partner_name     String     @db.VarChar(255)
-  notification_url String     @db.VarChar(255)
+  notification_url String?    @db.VarChar(255)
   creator_id       String     @unique @db.VarChar(255)
   accounts         accounts[]
 }
