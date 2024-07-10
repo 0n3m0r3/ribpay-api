@@ -1,9 +1,5 @@
-import { randomUUID } from 'node:crypto';
-
-import { formatLabelForOxlin } from '../utils/oxlin-helpers';
-import { NotFoundException } from '@nestjs/common';
 import Oxlin from '@ribpay/oxlin';
-import { options } from 'axios';
+import { formatLabelForOxlin } from '../utils/oxlin-helpers';
 
 const client_id = process.env.OXLIN_CLIENT_ID;
 const client_secret = process.env.OXLIN_CLIENT_SECRET;
@@ -139,15 +135,18 @@ export async function searchProviders({ iban }) {
   return providers[0].providers;
 }
 
-
 export async function deleteAlias({ alias_id }) {
-  const alias = await oxlin.accountAliases.delete(alias_id);
-  return alias;
+  try {
+    await oxlin.accountAliases.delete(alias_id);
+  } catch (error) {
+    return error;
+  }
 }
 
 export async function deleteAuthorizedAccount({ authorized_account_id }) {
-  const authorizedAccount = await oxlin.authorizedAccounts.delete(
-    authorized_account_id,
-  );
-  return authorizedAccount;
+  try {
+    await oxlin.authorizedAccounts.delete(authorized_account_id);
+  } catch (error) {
+    return error;
+  }
 }
