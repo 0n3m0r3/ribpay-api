@@ -94,6 +94,9 @@ export class ContractsService {
         throw new NotFoundException('Admin user not found');
       }
 
+      console.log('isDev', isDev);
+      console.log("process.env.NODE_ENV", process.env.NODE_ENV);
+
       if (isDev) {
         console.log('DEV MODE PP');
         authorizedAccount = await postAuthorizedAccounts({
