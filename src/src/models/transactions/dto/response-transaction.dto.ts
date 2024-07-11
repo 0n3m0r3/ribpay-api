@@ -48,6 +48,12 @@ export class TransactionResponseDto {
   })
   transaction_amount_cents: number;
 
+  @ApiProperty({
+    description: 'Decimal representation of the transaction amount',
+    example: 10.0,
+  })
+  transaction_amount_calculated: number;
+
   @ApiProperty({ example: 'EUR', description: 'Currency of the transaction' })
   transaction_currency: string;
 

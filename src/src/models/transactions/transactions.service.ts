@@ -60,10 +60,7 @@ export class TransactionsService {
       throw new NotFoundException('Contract does not exist');
     }
 
-    if (
-      createTransactionDto.currency !== 'EUR' &&
-      createTransactionDto.currency !== null
-    ) {
+    if (createTransactionDto.currency !== 'EUR') {
       throw new UnprocessableEntityException('Currency not supported');
     }
 
@@ -87,6 +84,7 @@ export class TransactionsService {
             createTransactionDto.amount_cents * 0.2,
         ),
         transaction_amount_cents: createTransactionDto.amount_cents,
+        transaction_amount_calculated: createTransactionDto.amount_calculated,
         transaction_currency: 'EUR',
         transaction_vat: 20,
         transaction_label: createTransactionDto.label,
@@ -100,6 +98,8 @@ export class TransactionsService {
         creator_id: subAccount,
       },
     });
+
+    console.log('transactionData', transactionData);
 
     return await this.prisma.transactions.update({
       where: {
@@ -217,6 +217,9 @@ export class TransactionsService {
       transaction_amount_without_vat:
         transaction.transaction_amount_without_vat,
       transaction_amount_cents: transaction.transaction_amount_cents,
+      transaction_amount_calculated: Number(
+        transaction.transaction_amount_calculated,
+      ),
       transaction_currency: transaction.transaction_currency,
       transaction_vat: transaction.transaction_vat,
       transaction_label: transaction.transaction_label,
@@ -363,6 +366,9 @@ export class TransactionsService {
       transaction_amount_without_vat:
         transaction.transaction_amount_without_vat,
       transaction_amount_cents: transaction.transaction_amount_cents,
+      transaction_amount_calculated: Number(
+        transaction.transaction_amount_calculated,
+      ),
       transaction_currency: transaction.transaction_currency,
       transaction_vat: transaction.transaction_vat,
       transaction_label: transaction.transaction_label,
@@ -499,6 +505,9 @@ export class TransactionsService {
       transaction_amount_without_vat:
         transaction.transaction_amount_without_vat,
       transaction_amount_cents: transaction.transaction_amount_cents,
+      transaction_amount_calculated: Number(
+        transaction.transaction_amount_calculated,
+      ),
       transaction_currency: transaction.transaction_currency,
       transaction_vat: transaction.transaction_vat,
       transaction_label: transaction.transaction_label,
