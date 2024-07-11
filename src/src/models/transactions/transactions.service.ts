@@ -74,6 +74,10 @@ export class TransactionsService {
       redirect_url: createTransactionDto.redirect_url,
     });
 
+
+    console.log('amount_calculated', createTransactionDto.amount_calculated);
+    console.log('amount_calculated type', typeof createTransactionDto.amount_calculated);
+
     const transactionData = await this.prisma.transactions.create({
       data: {
         transaction_id_oxlin: order.id,
