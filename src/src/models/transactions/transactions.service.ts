@@ -232,7 +232,7 @@ export class TransactionsService {
     return {
       Transactions: result,
       Pagination: pagination,
-    } as ResponseListTransactionDto;
+    } as unknown as ResponseListTransactionDto;
   }
 
   async findOne(id: string, subAccount: string) {
@@ -383,7 +383,7 @@ export class TransactionsService {
     return {
       Transactions: result,
       Pagination: pagination,
-    } as ResponseListTransactionDto;
+    } as unknown as ResponseListTransactionDto;
   }
 
   async findByTerminal(
@@ -524,6 +524,6 @@ export class TransactionsService {
     return {
       Transactions: result,
       Pagination: pagination,
-    } as ResponseListTransactionDto;
+    } as unknown as ResponseListTransactionDto;
   }
 }
