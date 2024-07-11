@@ -152,6 +152,7 @@ model transactions {
   transaction_notification_url   String        @db.VarChar(255)
   transaction_initiated          DateTime?     @default(now()) @db.Timestamptz(6)
   transaction_finished           DateTime?     @db.Timestamptz(6)
+  transaction_metadata           Json?         @db.Json
   account_id                     String        @db.Uuid
   contract_id                    String        @db.Uuid
   terminal_id                    String        @db.Uuid

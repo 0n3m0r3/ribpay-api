@@ -75,7 +75,7 @@ export class AccountsService {
     });
 
     // Create the creation_url and update the account
-    const creationUrl = `http://localhost:3001/account/${subAccount}/${account.account_id}`;
+    const creationUrl = `https://ribpay-api-validate-service.azurewebsites.net/account/${subAccount}/${account.account_id}`;
     await this.prisma.accounts.update({
       where: { account_id: account.account_id },
       data: { account_creation_url: creationUrl },
