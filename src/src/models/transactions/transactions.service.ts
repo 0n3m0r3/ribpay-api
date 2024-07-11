@@ -64,23 +64,19 @@ export class TransactionsService {
       throw new UnprocessableEntityException('Currency not supported');
     }
 
-    const order = await postOrder({
-      amount: createTransactionDto.amount_calculated,
-      currency: 'EUR',
-      label: createTransactionDto.label,
-      instantPayment: createTransactionDto.instant_payment,
-      alias_id: contract.contract_alias_id,
-      name: account.account_name,
-      redirect_url: createTransactionDto.redirect_url,
-    });
-
-
-    console.log('amount_calculated', createTransactionDto.amount_calculated);
-    console.log('amount_calculated type', typeof createTransactionDto.amount_calculated);
+    // const order = await postOrder({
+    //   amount: createTransactionDto.amount_calculated,
+    //   currency: 'EUR',
+    //   label: createTransactionDto.label,
+    //   instantPayment: createTransactionDto.instant_payment,
+    //   alias_id: contract.contract_alias_id,
+    //   name: account.account_name,
+    //   redirect_url: createTransactionDto.redirect_url,
+    // });
 
     const transactionData = await this.prisma.transactions.create({
       data: {
-        transaction_id_oxlin: order.id,
+        transaction_id_oxlin: null,
         transaction_status: 'NEW',
         transaction_instant_payment: createTransactionDto.instant_payment,
         transaction_amount_without_vat: Math.floor(
@@ -92,7 +88,8 @@ export class TransactionsService {
         transaction_currency: 'EUR',
         transaction_vat: 20,
         transaction_label: createTransactionDto.label,
-        transaction_auth_url: `https://www.ribpay.page/authorize/api/${order.id}`,
+        transaction_beneficiary: account.account_name,
+        transaction_auth_url: null,
         transaction_redirect_url: createTransactionDto.redirect_url,
         transaction_notification_url: createTransactionDto.notification_url,
         transaction_type: contract.contract_type,
@@ -111,7 +108,7 @@ export class TransactionsService {
         creator_id: subAccount,
       },
       data: {
-        transaction_auth_url: `https://www.ribpay.page/authorize/api/${transactionData.transaction_id}`,
+        transaction_auth_url: `https://www.ribpay.page/authorize/api/${subAccount}/${transactionData.transaction_id}`,
       },
     });
   }
@@ -227,6 +224,7 @@ export class TransactionsService {
       transaction_currency: transaction.transaction_currency,
       transaction_vat: transaction.transaction_vat,
       transaction_label: transaction.transaction_label,
+      transaction_beneficiary: transaction.transaction_beneficiary,
       transaction_auth_url: transaction.transaction_auth_url,
       transaction_redirect_url: transaction.transaction_redirect_url,
       transaction_notification_url: transaction.transaction_notification_url,
@@ -376,6 +374,7 @@ export class TransactionsService {
       transaction_currency: transaction.transaction_currency,
       transaction_vat: transaction.transaction_vat,
       transaction_label: transaction.transaction_label,
+      transaction_beneficiary: transaction.transaction_beneficiary,
       transaction_auth_url: transaction.transaction_auth_url,
       transaction_redirect_url: transaction.transaction_redirect_url,
       transaction_notification_url: transaction.transaction_notification_url,
@@ -515,6 +514,7 @@ export class TransactionsService {
       transaction_currency: transaction.transaction_currency,
       transaction_vat: transaction.transaction_vat,
       transaction_label: transaction.transaction_label,
+      transaction_beneficiary: transaction.transaction_beneficiary,
       transaction_auth_url: transaction.transaction_auth_url,
       transaction_redirect_url: transaction.transaction_redirect_url,
       transaction_notification_url: transaction.transaction_notification_url,

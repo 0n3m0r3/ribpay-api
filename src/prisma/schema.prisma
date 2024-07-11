@@ -136,7 +136,7 @@ model terminals {
 model transactions {
   transaction_id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   transaction_last_modified      DateTime?     @db.Timestamptz(6)
-  transaction_id_oxlin           String        @db.VarChar(255)
+  transaction_id_oxlin           String?       @db.VarChar(255)
   transaction_status             String        @db.VarChar(255)
   transaction_type               String        @db.VarChar(255)
   transaction_instant_payment    Boolean
@@ -146,7 +146,8 @@ model transactions {
   transaction_currency           String        @db.VarChar(255)
   transaction_vat                Int
   transaction_label              String        @db.VarChar(255)
-  transaction_auth_url           String        @db.VarChar(255)
+  transaction_beneficiary        String        @db.VarChar(255)
+  transaction_auth_url           String?       @db.VarChar(255)
   transaction_redirect_url       String        @db.VarChar(255)
   transaction_notification_url   String        @db.VarChar(255)
   transaction_initiated          DateTime?     @default(now()) @db.Timestamptz(6)
