@@ -56,6 +56,7 @@ model billing_addresses {
 model contracts {
   contract_id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   contract_last_modified    DateTime?      @db.Timestamptz(6)
+  contract_deleted_at       DateTime?      @db.Timestamptz(6)
   contract_type             String         @db.VarChar(255)
   contract_number           String         @db.VarChar(255)
   contract_beneficiary_name String         @db.VarChar(255)
