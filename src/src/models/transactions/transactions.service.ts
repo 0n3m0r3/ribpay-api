@@ -64,16 +64,6 @@ export class TransactionsService {
       throw new UnprocessableEntityException('Currency not supported');
     }
 
-    // const order = await postOrder({
-    //   amount: createTransactionDto.amount_calculated,
-    //   currency: 'EUR',
-    //   label: createTransactionDto.label,
-    //   instantPayment: createTransactionDto.instant_payment,
-    //   alias_id: contract.contract_alias_id,
-    //   name: account.account_name,
-    //   redirect_url: createTransactionDto.redirect_url,
-    // });
-
     const transactionData = await this.prisma.transactions.create({
       data: {
         transaction_id_oxlin: null,
@@ -93,6 +83,7 @@ export class TransactionsService {
         transaction_redirect_url: createTransactionDto.redirect_url,
         transaction_notification_url: createTransactionDto.notification_url,
         transaction_type: contract.contract_type,
+        transaction_metadata: createTransactionDto.metadata || {},
         account_id: createTransactionDto.account_id,
         terminal_id: createTransactionDto.terminal_id,
         contract_id: createTransactionDto.contract_id,
@@ -230,6 +221,7 @@ export class TransactionsService {
       transaction_notification_url: transaction.transaction_notification_url,
       transaction_initiated: transaction.transaction_initiated,
       transaction_finished: transaction.transaction_finished,
+      transaction_metadata: transaction.transaction_metadata,
       account_id: transaction.account_id,
       contract_id: transaction.contract_id,
       terminal_id: transaction.terminal_id,
@@ -240,7 +232,7 @@ export class TransactionsService {
     return {
       Transactions: result,
       Pagination: pagination,
-    } as ResponseListTransactionDto;
+    } as unknown as ResponseListTransactionDto;
   }
 
   async findOne(id: string, subAccount: string) {
@@ -380,6 +372,7 @@ export class TransactionsService {
       transaction_notification_url: transaction.transaction_notification_url,
       transaction_initiated: transaction.transaction_initiated,
       transaction_finished: transaction.transaction_finished,
+      transaction_metadata: transaction.transaction_metadata,
       account_id: transaction.account_id,
       contract_id: transaction.contract_id,
       terminal_id: transaction.terminal_id,
@@ -390,7 +383,7 @@ export class TransactionsService {
     return {
       Transactions: result,
       Pagination: pagination,
-    } as ResponseListTransactionDto;
+    } as unknown as ResponseListTransactionDto;
   }
 
   async findByTerminal(
@@ -520,6 +513,7 @@ export class TransactionsService {
       transaction_notification_url: transaction.transaction_notification_url,
       transaction_initiated: transaction.transaction_initiated,
       transaction_finished: transaction.transaction_finished,
+      transaction_metadata: transaction.transaction_metadata,
       account_id: transaction.account_id,
       contract_id: transaction.contract_id,
       terminal_id: transaction.terminal_id,
@@ -530,6 +524,6 @@ export class TransactionsService {
     return {
       Transactions: result,
       Pagination: pagination,
-    } as ResponseListTransactionDto;
+    } as unknown as ResponseListTransactionDto;
   }
 }

@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -104,4 +105,8 @@ export class CreateTransactionDto {
 
   @IsNotEmpty()
   amount_calculated: number;
+
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, any>;
 }
