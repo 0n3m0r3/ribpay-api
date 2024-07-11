@@ -25,6 +25,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
+    console.log(exception);
+
     if (exception instanceof HttpException) {
       this.handleHttpException(exception, response);
     } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
