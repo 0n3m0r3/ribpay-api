@@ -1,7 +1,7 @@
-import { IsOptional, IsString, IsDate } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsDate, IsBoolean } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { PaginationDto } from 'src/models/dto/pagination.dto'; 
+import { PaginationDto } from 'src/models/dto/pagination.dto';
 
 export class ContractListQueryDto extends PaginationDto {
   @ApiProperty({
@@ -61,4 +61,14 @@ export class ContractListQueryDto extends PaginationDto {
   @Type(() => Date)
   @IsDate()
   last_modified_after?: Date;
+
+  @ApiProperty({
+    example: '2024-06-20',
+    description: 'Filter by deletion',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  is_deleted?: boolean;
 }

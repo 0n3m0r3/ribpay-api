@@ -24,6 +24,13 @@ export class ContractResponseDto {
   })
   contract_last_modified: Date | null;
 
+  @ApiProperty({
+    description: 'Timestamp of the deletion of the contract',
+    type: 'string',
+    format: 'date-time',
+  })
+  contract_deleted_at: Date | null;
+
   @ApiProperty({ example: 'RIBPAY', description: 'Type of the contract' })
   contract_type: string;
 

@@ -1,15 +1,16 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import {
+  deleteAlias,
+  deleteAuthorizedAccount,
   postAlias,
   postAuthorizedAccounts,
   postAuthorizedAccountsPersonnePhysique,
   searchProviders,
-  deleteAlias,
-  deleteAuthorizedAccount,
 } from 'src/lib/oxlin';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { isDev } from '../../utils/is-dev';
@@ -56,11 +57,12 @@ export class ContractsService {
           terminal_id: createContractDto.terminal_id,
           contract_type: 'RIBPAY',
           creator_id: subAccount,
+          contract_deleted_at: null,
         },
       });
 
       if (contracts.length > 0) {
-        throw new BadRequestException(
+        throw new ConflictException(
           'Terminal already has a contract of this type',
         );
       }
@@ -76,6 +78,10 @@ export class ContractsService {
       label: account.account_name,
       bic: (providers[0] as any).bic,
     });
+
+    if (alias instanceof Error) {
+      throw new BadRequestException('Error creating alias');
+    }
 
     let authorizedAccount;
 
@@ -94,18 +100,14 @@ export class ContractsService {
         throw new NotFoundException('Admin user not found');
       }
 
-      console.log('isDev', isDev);
-      console.log("process.env.NODE_ENV", process.env.NODE_ENV);
-
       if (isDev) {
-        console.log('DEV MODE PP');
         authorizedAccount = await postAuthorizedAccounts({
           iban: 'FR8530003000307599775722N09',
           nationalId: '99999999999999',
           company_name: 'MY SANDBOX COMPANY',
+          headers: { 'Content-type': 'application/hal+json' },
         });
       } else {
-        console.log('PROD MODE PP');
         authorizedAccount = await postAuthorizedAccountsPersonnePhysique({
           firstname: adminUser.users.user_first_name,
           surname: adminUser.users.user_last_name,
@@ -114,25 +116,43 @@ export class ContractsService {
           birth_country: adminUser.users.user_birth_country,
           iban: createContractDto.iban,
           company_name: account.account_name,
+          headers: { 'Content-type': 'application/json', Accept: '*/*' },
         });
       }
     } else {
       if (isDev) {
-        console.log('DEV MODE PM');
         authorizedAccount = await postAuthorizedAccounts({
           iban: 'FR8530003000307599775722N09',
           nationalId: '99999999999999',
           company_name: 'MY SANDBOX COMPANY',
+          headers: { 'Content-type': 'application/hal+json' },
         });
       } else {
-        console.log('PROD MODE PM');
         authorizedAccount = await postAuthorizedAccounts({
           iban: createContractDto.iban,
           nationalId: account.account_national_id,
           company_name: account.account_name,
+          headers: { 'Content-type': 'application/json', Accept: '*/*' },
         });
       }
     }
+
+    if (authorizedAccount instanceof Error) {
+      if ((authorizedAccount as any).status === 409) {
+        throw new ConflictException(
+          (authorizedAccount as any).error.error_description,
+        );
+      } else {
+        console.log(authorizedAccount);
+        throw new BadRequestException('Error creating authorized account');
+      }
+    }
+    authorizedAccount = JSON.parse(authorizedAccount);
+
+    const contract_number = generateReference({
+      prefix: 'OXLN',
+      contractId: authorizedAccount.id,
+    });
 
     return await this.prisma.contracts.create({
       data: {
@@ -143,10 +163,7 @@ export class ContractsService {
         contract_alias_id: alias.id,
         creator_id: subAccount,
         contract_beneficiary_name: account.account_name,
-        contract_number: generateReference({
-          prefix: 'OXLN',
-          contractId: authorizedAccount.id,
-        }),
+        contract_number,
       },
     });
   }
@@ -209,6 +226,10 @@ export class ContractsService {
       ...(query.last_modified_after && {
         contract_last_modified: { gt: new Date(query.last_modified_after) },
       }),
+      ...(query.is_deleted === true && {
+        contract_deleted_at: { not: null },
+      }),
+      ...(query.is_deleted === false && { contract_deleted_at: null }),
     };
 
     const [contracts, total_count] = await this.prisma.$transaction([
@@ -247,6 +268,7 @@ export class ContractsService {
       contract_id: contract.contract_id,
       contract_created_at: contract.contract_created_at,
       contract_last_modified: contract.contract_last_modified,
+      contract_deleted_at: contract.contract_deleted_at,
       contract_type: contract.contract_type,
       contract_number: contract.contract_number,
       contract_beneficiary_name: contract.contract_beneficiary_name,
@@ -341,6 +363,10 @@ export class ContractsService {
       ...(query.last_modified_after && {
         contract_last_modified: { gt: new Date(query.last_modified_after) },
       }),
+      ...(query.is_deleted === true && {
+        contract_deleted_at: { not: null },
+      }),
+      ...(query.is_deleted === false && { contract_deleted_at: null }),
     };
 
     const [contracts, total_count] = await this.prisma.$transaction([
@@ -379,6 +405,7 @@ export class ContractsService {
       contract_id: contract.contract_id,
       contract_created_at: contract.contract_created_at,
       contract_last_modified: contract.contract_last_modified,
+      contract_deleted_at: contract.contract_deleted_at,
       contract_type: contract.contract_type,
       contract_number: contract.contract_number,
       contract_beneficiary_name: contract.contract_beneficiary_name,
@@ -463,6 +490,10 @@ export class ContractsService {
       ...(query.last_modified_after && {
         contract_last_modified: { gt: new Date(query.last_modified_after) },
       }),
+      ...(query.is_deleted === true && {
+        contract_deleted_at: { not: null },
+      }),
+      ...(query.is_deleted === false && { contract_deleted_at: null }),
     };
 
     const [contracts, total_count] = await this.prisma.$transaction([
@@ -501,6 +532,7 @@ export class ContractsService {
       contract_id: contract.contract_id,
       contract_created_at: contract.contract_created_at,
       contract_last_modified: contract.contract_last_modified,
+      contract_deleted_at: contract.contract_deleted_at,
       contract_type: contract.contract_type,
       contract_number: contract.contract_number,
       contract_beneficiary_name: contract.contract_beneficiary_name,
@@ -581,17 +613,28 @@ export class ContractsService {
     if (!contract) {
       throw new NotFoundException('Contract not found');
     }
-    try{
-    await deleteAlias({ alias_id: contract.contract_alias_id });
-    await deleteAuthorizedAccount({
-      authorized_account_id: contract.contract_merchant_id,
+
+    const responseAliasDeletion = await deleteAlias({
+      alias_id: contract.contract_alias_id,
     });
-    }catch(err){
-      throw new BadRequestException('Error deleting contract');
+
+    if (responseAliasDeletion instanceof Error) {
+      throw new BadRequestException('Error deleting alias');
     }
 
-    return await this.prisma.contracts.delete({
+    const responseAuthorizedAccountDeletion = await deleteAuthorizedAccount({
+      authorized_account_id: contract.contract_merchant_id,
+    });
+
+    if (responseAuthorizedAccountDeletion instanceof Error) {
+      throw new BadRequestException('Error deleting authorized account');
+    }
+
+    return await this.prisma.contracts.update({
       where: { contract_id: id, creator_id: subAccount },
+      data: {
+        contract_deleted_at: new Date(),
+      },
     });
   }
 }
