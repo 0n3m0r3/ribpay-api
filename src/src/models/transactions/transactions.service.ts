@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { postOrder } from 'src/lib/oxlin';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -56,7 +60,10 @@ export class TransactionsService {
       throw new NotFoundException('Contract does not exist');
     }
 
-    if (createTransactionDto.currency !== 'EUR' && createTransactionDto.currency !==  null) {
+    if (
+      createTransactionDto.currency !== 'EUR' &&
+      createTransactionDto.currency !== null
+    ) {
       throw new UnprocessableEntityException('Currency not supported');
     }
 
@@ -70,7 +77,7 @@ export class TransactionsService {
       redirect_url: createTransactionDto.redirect_url,
     });
 
-    return await this.prisma.transactions.create({
+    const transactionData = await this.prisma.transactions.create({
       data: {
         transaction_id_oxlin: order.id,
         transaction_status: 'NEW',
@@ -83,7 +90,7 @@ export class TransactionsService {
         transaction_currency: 'EUR',
         transaction_vat: 20,
         transaction_label: createTransactionDto.label,
-        transaction_auth_url: `https://www.ribpay.page/authorize/${order.id}`,
+        transaction_auth_url: `https://www.ribpay.page/authorize/api/${order.id}`,
         transaction_redirect_url: createTransactionDto.redirect_url,
         transaction_notification_url: createTransactionDto.notification_url,
         transaction_type: contract.contract_type,
@@ -91,6 +98,16 @@ export class TransactionsService {
         terminal_id: createTransactionDto.terminal_id,
         contract_id: createTransactionDto.contract_id,
         creator_id: subAccount,
+      },
+    });
+
+    return await this.prisma.transactions.update({
+      where: {
+        transaction_id: transactionData.transaction_id,
+        creator_id: subAccount,
+      },
+      data: {
+        transaction_auth_url: `https://www.ribpay.page/authorize/api/${transactionData.transaction_id}`,
       },
     });
   }
@@ -292,7 +309,7 @@ export class TransactionsService {
       }),
       ...(query.last_modified_after && {
         transaction_last_modified: { gt: new Date(query.last_modified_after) },
-      }),     
+      }),
       ...(query.transaction_finished_before && {
         transaction_finished: {
           lt: new Date(query.transaction_finished_before),

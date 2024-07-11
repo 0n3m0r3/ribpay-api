@@ -22,13 +22,13 @@ export class CreateTransactionDto {
   instant_payment: boolean;
 
   @IsEnum(['EUR'])
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty({
     description: 'Currency of the payment',
     example: 'EUR',
     required: false,
   })
-  currency?: string;
+  currency: string;
 
   
   @IsNotEmpty()
