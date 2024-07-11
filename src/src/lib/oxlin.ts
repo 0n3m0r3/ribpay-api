@@ -44,28 +44,32 @@ export async function postAuthorizedAccounts({
   iban,
   nationalId: national_identification,
   company_name,
+  headers,
 }) {
   const options = {
-    headers: {
-      'Content-Type': 'application/hal+json',
-    },
+    headers,
   };
-  const authorizedAccount = await oxlin.authorizedAccounts.create(
-    {
-      identification: {
-        schema: 'SEPA',
-        iban,
-        name: company_name,
+  try {
+    const authorizedAccount = await oxlin.authorizedAccounts.create(
+      {
+        identification: {
+          schema: 'SEPA',
+          iban,
+          name: company_name,
+        },
+        entity: {
+          type: 'COMPANY',
+          company_name,
+          national_identification,
+        },
       },
-      entity: {
-        type: 'COMPANY',
-        company_name,
-        national_identification,
-      },
-    },
-    options,
-  );
-  return authorizedAccount;
+      options,
+    );
+
+    return authorizedAccount;
+  } catch (error) {
+    return error;
+  }
 }
 
 export async function postAuthorizedAccountsPersonnePhysique({
@@ -76,33 +80,36 @@ export async function postAuthorizedAccountsPersonnePhysique({
   birth_country,
   iban,
   company_name,
+  headers,
 }) {
   const options = {
-    headers: {
-      'Content-Type': 'application/hal+json',
-    },
+    headers,
   };
 
-  const authorizedAccount = await oxlin.authorizedAccounts.create(
-    {
-      identification: {
-        schema: 'SEPA',
-        iban,
-        name: company_name,
+  try {
+    const authorizedAccount = await oxlin.authorizedAccounts.create(
+      {
+        identification: {
+          schema: 'SEPA',
+          iban,
+          name: company_name,
+        },
+        entity: {
+          type: 'NATURAL_PERSON',
+          firstname,
+          surname,
+          birth_date,
+          birth_city,
+          birth_country,
+        },
       },
-      entity: {
-        type: 'NATURAL_PERSON',
-        firstname,
-        surname,
-        birth_date,
-        birth_city,
-        birth_country,
-      },
-    },
-    options,
-  );
+      options,
+    );
 
-  return authorizedAccount;
+    return authorizedAccount;
+  } catch (error) {
+    return error;
+  }
 }
 
 export async function postAlias({ user_reference, label, iban, bic }) {
@@ -124,7 +131,7 @@ export async function searchProviders({ iban }) {
     payer: [
       {
         schema: 'SEPA',
-        iban: 'FR7630006000011234567890189',
+        iban,
       },
     ],
   };
