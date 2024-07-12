@@ -93,7 +93,7 @@ export class CreateTransactionDto {
   terminal_id: string;
 
   @IsUUID()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     description: 'Unique identifier for the contract.',
     example: 'f45b68fa-4586-4453-83af-ee2c1c2ecc27',
@@ -101,7 +101,7 @@ export class CreateTransactionDto {
     format: 'uuid',
     required: true,
   })
-  contract_id: string;
+  contract_id?: string;
 
   @IsNotEmpty()
   amount_calculated: number;

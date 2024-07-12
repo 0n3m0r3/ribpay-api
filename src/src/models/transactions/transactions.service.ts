@@ -87,7 +87,7 @@ export class TransactionsService {
         transaction_metadata: createTransactionDto.metadata || {},
         account_id: createTransactionDto.account_id,
         terminal_id: createTransactionDto.terminal_id,
-        contract_id: createTransactionDto.contract_id,
+        contract_id: createTransactionDto.contract_id || null,
         creator_id: subAccount,
       },
     });

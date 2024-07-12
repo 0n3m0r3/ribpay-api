@@ -162,7 +162,7 @@ model transactions {
   installment_id                 String?       @db.Uuid
   creator_id                     String        @db.VarChar(255)
   accounts                       accounts      @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
-  contracts                      contracts     @relation(fields: [contract_id], references: [contract_id], onDelete: NoAction, onUpdate: NoAction)
+  contracts                      contracts?    @relation(fields: [contract_id], references: [contract_id], onDelete: NoAction, onUpdate: NoAction)
   installments                   installments? @relation(fields: [installment_id], references: [installment_id], onDelete: NoAction, onUpdate: NoAction)
   terminals                      terminals     @relation(fields: [terminal_id], references: [terminal_id], onDelete: NoAction, onUpdate: NoAction)
 }
