@@ -137,6 +137,9 @@ model transactions {
   transaction_id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   transaction_last_modified      DateTime?     @db.Timestamptz(6)
   transaction_id_oxlin           String?       @db.VarChar(255)
+  transaction_oxlin_ttl          String?       @db.VarChar(255)
+  trasaction_token_payline       String?       @db.VarChar(255)
+  transaction_token_payline_ttl  String?       @db.VarChar(255)
   transaction_status             String        @db.VarChar(255)
   transaction_type               String        @db.VarChar(255)
   transaction_instant_payment    Boolean
