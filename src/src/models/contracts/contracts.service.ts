@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import {
   deleteAlias,
@@ -36,7 +37,7 @@ export class ContractsService {
     });
 
     if (!account) {
-      throw new BadRequestException(
+      throw new UnprocessableEntityException(
         'Account does not exist, has been deleted or is inactive',
       );
     }

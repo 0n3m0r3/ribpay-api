@@ -32,7 +32,12 @@ export class AccountsService {
     subAccount: string,
   ): Promise<AccountCreateResponseDto> {
     console.log('lago api key', process.env.LAGO_API_KEY);
-    const client = Client(process.env.LAGO_API_KEY);
+    const client = Client(process.env.LAGO_API_KEY, {
+      baseUrl: 'https://api.getlago.com/api/v1',
+    } 
+    );
+
+    console.log('client', client);
     // Return an error if the company already exists
     const existingAccount = await this.prisma.accounts.findFirst({
       where: {
@@ -125,13 +130,24 @@ export class AccountsService {
       },
     };
 
-    const {
-      data: {
-        customer: { lago_id, created_at },
-      },
-    } = await client.customers.createCustomer({
-      customer: customerObject as any,
-    });
+    console.log('customerObject', customerObject);
+
+    // const {
+    //   data: {
+    //     customer: { lago_id, created_at },
+    //   },
+    // } =
+
+    try {
+      const res = await client.customers.createCustomer({
+        customer: customerObject as any,
+      });
+
+
+      console.log('res', res);
+    } catch (error) {
+      console.log('error', error);
+    }
 
     const subscriptionId = randomUUID();
     // https://stackoverflow.com/a/34053802
