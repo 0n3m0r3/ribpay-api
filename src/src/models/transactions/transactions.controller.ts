@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { TransactionsService } from './transactions.service';
 import {
@@ -14,6 +14,7 @@ import { AccountIdDTO, IdDTO, TerminalIdDTO } from '../dto/id.dto';
 import { PaginationDto } from '../dto/pagination.dto';
 import { PaginationResponseDto } from '../dto/pagination-response.dto';
 import { TransactionListQueryDto } from './dto/query-list-transaction.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
 @ApiTags('Transactions')
 @ApiHeader({
@@ -113,6 +114,32 @@ export class TransactionsController {
       req.subAccount,
       query,
       baseUrl
+    );
+  }
+
+  @ApiOperation({ summary: 'Update a transaction' })
+  @ApiParam({
+    name: 'id',
+    description: 'Unique identifier of the transaction',
+    type: 'uuid',
+  })
+  @ApiBody({ type: UpdateTransactionDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Transaction updated successfully',
+    type: TransactionResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Transaction not found' })
+  @Put(':id')
+  update(
+    @Param() params: IdDTO,
+    @Body() updateTransactionDto: UpdateTransactionDto,
+    @Req() req: any,
+  ) {
+    return this.transactionsService.update(
+      params.id,
+      updateTransactionDto,
+      req.subAccount,
     );
   }
 }

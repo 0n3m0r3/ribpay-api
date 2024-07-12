@@ -13,6 +13,7 @@ import {
   TransactionResponseDto,
 } from './dto/response-transaction.dto';
 import { TransactionListQueryDto } from './dto/query-list-transaction.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -525,5 +526,28 @@ export class TransactionsService {
       Transactions: result,
       Pagination: pagination,
     } as unknown as ResponseListTransactionDto;
+  }
+
+  async update(
+    id: string,
+    updateTransactionDto: UpdateTransactionDto,
+    subAccount: string,
+  ) {
+    const transaction = await this.prisma.transactions.findUnique({
+      where: { transaction_id: id, creator_id: subAccount },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    const updatedTransaction = await this.prisma.transactions.update({
+      where: { transaction_id: id },
+      data: {
+        transaction_status: updateTransactionDto.status,
+      },
+    });
+
+    return updatedTransaction;
   }
 }

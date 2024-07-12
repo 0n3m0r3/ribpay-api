@@ -12,3 +12,8 @@ export enum AccountType {
   personnePhysique,
   personneMorale,
 }
+
+
+export enum TransactionStatus {
+  Closed = 'CLOSED',
+}
