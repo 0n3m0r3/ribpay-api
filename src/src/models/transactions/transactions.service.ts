@@ -66,7 +66,7 @@ export class TransactionsService {
     if (createTransactionDto.currency !== 'EUR') {
       throw new UnprocessableEntityException('Currency not supported');
     }
-
+    console.log('createTransactionDto', createTransactionDto);
     const transactionData = await this.prisma.transactions.create({
       data: {
         transaction_id_oxlin: null,
