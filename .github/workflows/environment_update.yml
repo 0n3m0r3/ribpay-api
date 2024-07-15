@@ -133,21 +133,21 @@ jobs:
                         "azure-storage=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity"
           fi
 
-      - name: Update Container App
+      - name: Update Container App with New Revision
         run: |
-          az containerapp update \
+          az containerapp revision copy \
             --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --cpu 0.5 \
+            --memory 1.0Gi \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
-            --create-revision true \
-            --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
-                          "INPI_USERNAME=secretref:inpi-username" \
-                          "INPI_PASSWORD=secretref:inpi-password" \
-                          "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
-                          "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
-                          "LAGO_API_KEY=secretref:lago-api-key" \
-                          "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage"
-            
+            --env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
+                       "INPI_USERNAME=secretref:inpi-username" \
+                       "INPI_PASSWORD=secretref:inpi-password" \
+                       "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
+                       "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
+                       "LAGO_API_KEY=secretref:lago-api-key" \
+                       "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage"
 
       - name: Output deployment information
         run: |
