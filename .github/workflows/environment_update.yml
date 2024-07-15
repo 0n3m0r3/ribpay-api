@@ -141,7 +141,7 @@ jobs:
             --cpu 0.5 \
             --memory 1.0Gi \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
-            --env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
+            --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
                        "INPI_USERNAME=secretref:inpi-username" \
                        "INPI_PASSWORD=secretref:inpi-password" \
                        "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
