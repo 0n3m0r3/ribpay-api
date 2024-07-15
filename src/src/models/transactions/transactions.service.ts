@@ -49,16 +49,18 @@ export class TransactionsService {
     if (!terminal) {
       throw new NotFoundException('Terminal does not exist');
     }
+    let contract;
+    if (createTransactionDto.contract_id) {
+      contract = await this.prisma.contracts.findUnique({
+        where: {
+          contract_id: createTransactionDto.contract_id,
+          creator_id: subAccount,
+        },
+      });
 
-    const contract = await this.prisma.contracts.findUnique({
-      where: {
-        contract_id: createTransactionDto.contract_id,
-        creator_id: subAccount,
-      },
-    });
-
-    if (!contract) {
-      throw new NotFoundException('Contract does not exist');
+      if (!contract) {
+        throw new NotFoundException('Contract does not exist');
+      }
     }
 
     if (createTransactionDto.currency !== 'EUR') {
@@ -83,7 +85,7 @@ export class TransactionsService {
         transaction_auth_url: null,
         transaction_redirect_url: createTransactionDto.redirect_url,
         transaction_notification_url: createTransactionDto.notification_url,
-        transaction_type: contract.contract_type,
+        transaction_type: contract?.contract_type ?? null,
         transaction_metadata: createTransactionDto.metadata || {},
         account_id: createTransactionDto.account_id,
         terminal_id: createTransactionDto.terminal_id,
@@ -100,7 +102,7 @@ export class TransactionsService {
         creator_id: subAccount,
       },
       data: {
-        transaction_auth_url: `https://www.ribpay.page/authorize/api/${subAccount}/${transactionData.transaction_id}`,
+        transaction_auth_url: `https://www.ribpay.page/authorize/v2/${subAccount}/${transactionData.transaction_id}`,
       },
     });
   }
