@@ -49,7 +49,11 @@ export class TransactionsService {
     if (!terminal) {
       throw new NotFoundException('Terminal does not exist');
     }
-    let contract;
+
+    let contract = {
+      contract_id: null,
+      contract_type: null,
+    }
     if (createTransactionDto.contract_id) {
       contract = await this.prisma.contracts.findUnique({
         where: {
@@ -66,7 +70,9 @@ export class TransactionsService {
     if (createTransactionDto.currency !== 'EUR') {
       throw new UnprocessableEntityException('Currency not supported');
     }
-    console.log('createTransactionDto', createTransactionDto);
+    // console.log('createTransactionDto', createTransactionDto);
+    // console.log('contract', contract);
+    // console.log('contract?.contract_type', contract?.contract_type);
     const transactionData = await this.prisma.transactions.create({
       data: {
         transaction_id_oxlin: null,
@@ -89,7 +95,7 @@ export class TransactionsService {
         transaction_metadata: createTransactionDto.metadata || {},
         account_id: createTransactionDto.account_id,
         terminal_id: createTransactionDto.terminal_id,
-        contract_id: createTransactionDto.contract_id || null,
+        contract_id: createTransactionDto.contract_id,
         creator_id: subAccount,
       },
     });

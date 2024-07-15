@@ -141,7 +141,7 @@ model transactions {
   trasaction_token_payline       String?       @db.VarChar(255)
   transaction_token_payline_ttl  String?       @db.VarChar(255)
   transaction_status             String        @db.VarChar(255)
-  transaction_type               String        @db.VarChar(255)
+  transaction_type               String?       @db.VarChar(255)
   transaction_instant_payment    Boolean
   transaction_amount_without_vat Int
   transaction_amount_cents       Int
