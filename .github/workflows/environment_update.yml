@@ -139,6 +139,7 @@ jobs:
             --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
+            --create-revision true \
             --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
                           "INPI_USERNAME=secretref:inpi-username" \
                           "INPI_PASSWORD=secretref:inpi-password" \
@@ -146,7 +147,7 @@ jobs:
                           "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
                           "LAGO_API_KEY=secretref:lago-api-key" \
                           "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage"
-            --create-revision true
+            
 
       - name: Output deployment information
         run: |
