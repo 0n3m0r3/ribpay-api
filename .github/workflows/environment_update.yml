@@ -146,6 +146,7 @@ jobs:
                           "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
                           "LAGO_API_KEY=secretref:lago-api-key" \
                           "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage"
+            --create-revision true
 
       - name: Output deployment information
         run: |
