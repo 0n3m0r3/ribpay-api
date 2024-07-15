@@ -40,6 +40,12 @@ export class AccountDetailsDto {
   account_type: 'personneMorale' | 'personnePhysique';
 
   @ApiProperty({
+    example: 'FR',
+    description: 'Country code of the account.',
+  })
+  account_country: string;
+
+  @ApiProperty({
     example: true,
     description: 'Status of the account. For more infos see /validate',
     type: 'boolean',

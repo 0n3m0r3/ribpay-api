@@ -23,6 +23,15 @@ export class CreateAccountDto {
 
   @IsString()
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'Country code of the account',
+    example: 'FR',
+    required: true,
+  })
+  country: string;
+
+  @IsString()
+  @IsNotEmpty()
   @IsEmail()
   @ApiProperty({
     description:

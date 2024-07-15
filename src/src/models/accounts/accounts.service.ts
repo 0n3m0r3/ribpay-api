@@ -71,6 +71,7 @@ export class AccountsService {
       data: {
         account_national_id: createAccountDto.siret,
         account_is_active: false,
+        account_country: 'FR',  
         account_currency: 'EUR',
         account_notification_email: createAccountDto.notification_email,
         account_name: beneficiaryName,
