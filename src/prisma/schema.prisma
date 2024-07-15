@@ -151,8 +151,8 @@ model transactions {
   transaction_label              String        @db.VarChar(255)
   transaction_beneficiary        String        @db.VarChar(255)
   transaction_auth_url           String?       @db.VarChar(255)
-  transaction_redirect_url       String        @db.VarChar(255)
-  transaction_notification_url   String        @db.VarChar(255)
+  transaction_redirect_url       String?       @db.VarChar(255)
+  transaction_notification_url   String?       @db.VarChar(255)
   transaction_initiated          DateTime?     @default(now()) @db.Timestamptz(6)
   transaction_finished           DateTime?     @db.Timestamptz(6)
   transaction_metadata           Json?         @db.Json

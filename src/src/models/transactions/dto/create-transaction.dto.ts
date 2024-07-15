@@ -31,9 +31,10 @@ export class CreateTransactionDto {
   })
   currency: string;
 
-  
   @IsNotEmpty()
-  @IsAmountFormatCorrect({ message: 'Amount must be in supported format. See docs'})
+  @IsAmountFormatCorrect({
+    message: 'Amount must be in supported format. See docs',
+  })
   @ApiProperty({
     description: 'Amount of the payment in cents.',
     example: 1000,
@@ -51,24 +52,24 @@ export class CreateTransactionDto {
   label: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsUrl()
   @ApiProperty({
     description: 'URL for transaction authentication',
     example: 'https://example.com/auth',
     required: true,
   })
-  redirect_url: string;
+  redirect_url?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsUrl()
   @ApiProperty({
     description: 'URL for transaction notifications',
     example: 'https://example.com/notify',
     required: true,
   })
-  notification_url: string;
+  notification_url?: string;
 
   @IsUUID()
   @IsNotEmpty()
