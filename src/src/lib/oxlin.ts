@@ -157,3 +157,13 @@ export async function deleteAuthorizedAccount({ authorized_account_id }) {
     return error;
   }
 }
+
+export async function cancelOrder({ order_id }) {
+  try {
+    await oxlin.paymentOrders.running.orders.update(order_id, {
+      order_status: 'CLOSED',
+    });
+  } catch (error) {
+    return;
+  }
+}

@@ -25,6 +25,11 @@ export class TransactionResponseDto {
   transaction_id_oxlin: string;
 
   @ApiProperty({
+    description: 'Subscription identifier',
+  })
+  transaction_subscription_id: string;
+
+  @ApiProperty({
     example: 'completed',
     description: 'Current status of the transaction',
   })

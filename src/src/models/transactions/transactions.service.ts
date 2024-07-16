@@ -4,7 +4,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { postOrder } from 'src/lib/oxlin';
+import { cancelOrder, postOrder } from 'src/lib/oxlin';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationDto } from '../dto/pagination.dto';
 import { PaginationResponseDto } from '../dto/pagination-response.dto';
@@ -53,7 +53,7 @@ export class TransactionsService {
     let contract = {
       contract_id: null,
       contract_type: null,
-    }
+    };
     if (createTransactionDto.contract_id) {
       contract = await this.prisma.contracts.findUnique({
         where: {
@@ -77,6 +77,7 @@ export class TransactionsService {
       data: {
         transaction_id_oxlin: null,
         transaction_status: 'NEW',
+        transaction_subscription_id: terminal.terminal_subscription_id,
         transaction_instant_payment: createTransactionDto.instant_payment,
         transaction_amount_without_vat: Math.floor(
           createTransactionDto.amount_cents -
@@ -108,7 +109,7 @@ export class TransactionsService {
         creator_id: subAccount,
       },
       data: {
-        transaction_auth_url: `https://www.ribpay.page/authorize/v2/${subAccount}/${transactionData.transaction_id}`,
+        transaction_auth_url: `https://www.ribpay.page/authorize/v2/${transactionData.transaction_id}`,
       },
     });
   }
@@ -548,6 +549,24 @@ export class TransactionsService {
     if (!transaction) {
       throw new NotFoundException('Transaction not found');
     }
+
+    if (transaction.transaction_status === 'CANCELLED') {
+      throw new UnprocessableEntityException(
+        'Transaction has already been cancelled and cannot be updated',
+      );
+    }
+
+    if (
+      transaction.transaction_status === 'FINISHED' ||
+      transaction.transaction_status === 'ACCEPTED' ||
+      transaction.transaction_status === 'EXECUTED'
+    ) {
+      throw new UnprocessableEntityException(
+        'Transaction has already been completed and cannot be updated',
+      );
+    }
+
+    await cancelOrder({ order_id: transaction.transaction_id_oxlin });
 
     const updatedTransaction = await this.prisma.transactions.update({
       where: { transaction_id: id },
