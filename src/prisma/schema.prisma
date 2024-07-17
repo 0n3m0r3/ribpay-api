@@ -155,7 +155,7 @@ model transactions {
   transaction_redirect_url       String?       @db.VarChar(255)
   transaction_notification_url   String?       @db.VarChar(255)
   transaction_notification_email String?       @db.VarChar(255)
-  transaction_log_url            String?       @db.VarChar(255)
+  transaction_logo_url            String?       @db.VarChar(255)
   transaction_initiated          DateTime?     @default(now()) @db.Timestamptz(6)
   transaction_finished           DateTime?     @db.Timestamptz(6)
   transaction_metadata           Json?         @db.Json
