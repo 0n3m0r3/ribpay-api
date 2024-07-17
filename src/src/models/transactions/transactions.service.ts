@@ -92,6 +92,7 @@ export class TransactionsService {
         transaction_auth_url: null,
         transaction_redirect_url: createTransactionDto.redirect_url,
         transaction_notification_url: createTransactionDto.notification_url,
+        transaction_notification_email: account.account_notification_email,
         transaction_type: contract?.contract_type ?? null,
         transaction_metadata: createTransactionDto.metadata || {},
         account_id: createTransactionDto.account_id,

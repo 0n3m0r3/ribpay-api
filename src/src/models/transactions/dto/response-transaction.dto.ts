@@ -93,6 +93,12 @@ export class TransactionResponseDto {
   transaction_notification_url: string;
 
   @ApiProperty({
+    description: 'Email for transaction notifications',
+    type: 'string',
+  })
+  transaction_notification_email: string;
+
+  @ApiProperty({
     example: '2024-04-25T10:00:00Z',
     description: 'Time when the transaction was initiated',
     format: 'date-time',
