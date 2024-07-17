@@ -35,6 +35,7 @@ import { AccountListQueryDto } from './dto/query-list-account.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesAzureService } from '../validate/files-azure.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import sharp from 'sharp';
 
 @ApiHeader({
   name: 'sub-account',
@@ -187,9 +188,72 @@ export class AccountsController {
     if (account.account_deletion_date)
       throw new BadRequestException('Account has been deleted');
 
+    // Ensure file buffer is available
+    if (!file || !file.buffer) {
+      console.error('Uploaded file or file buffer is missing');
+      throw new BadRequestException('Uploaded file is missing or corrupt.');
+    }
+
+    // Dynamic import for file-type
+    const { fileTypeFromBuffer } = await import('file-type');
+
+    // Validate and convert file to PNG
+    const fileType = await fileTypeFromBuffer(file.buffer);
+    if (!fileType) {
+      // Fallback check for SVG files
+      const bufferString = file.buffer.toString('utf8');
+      if (bufferString.trim().startsWith('<svg')) {
+        console.log('File identified as SVG by fallback check.');
+      } else {
+        console.error('File type could not be determined:', file.buffer);
+        throw new BadRequestException(
+          'Invalid file type. Only image files are allowed.',
+        );
+      }
+    } else if (!fileType.mime.startsWith('image/')) {
+      console.error('Invalid MIME type:', fileType.mime);
+      throw new BadRequestException(
+        'Invalid file type. Only image files are allowed.',
+      );
+    }
+
+    let pngBuffer: Buffer;
+
+    if (fileType && fileType.mime.startsWith('image/svg+xml')) {
+      // Convert SVG to PNG using sharp
+      pngBuffer = await sharp(file.buffer, { density: 300 })
+        .resize({
+          width: 84,
+          height: 84,
+          fit: 'contain',
+          background: { r: 255, g: 255, b: 255, alpha: 0 },
+        })
+        .png()
+        .toBuffer();
+    } else {
+      // Convert other image types to PNG with aspect ratio 1:1
+      pngBuffer = await sharp(file.buffer)
+        .resize({
+          width: 84,
+          height: 84,
+          fit: 'contain',
+          background: { r: 255, g: 255, b: 255, alpha: 0 },
+        })
+        .png()
+        .toBuffer();
+    }
+
+    // Create a new file object with required properties
+    const convertedFile: Express.Multer.File = {
+      ...file,
+      buffer: pngBuffer,
+      originalname: `${file.originalname.split('.')[0]}.png`,
+      mimetype: 'image/png',
+    };
+
     const containerName = 'account-logo';
     const fileUrl = await this.filesAzureService.uploadFile(
-      file,
+      convertedFile,
       containerName,
     );
 
