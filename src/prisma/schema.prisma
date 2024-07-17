@@ -20,6 +20,7 @@ model accounts {
   account_created_at         DateTime            @default(now()) @db.Timestamptz(6)
   account_currency           String              @db.VarChar(255)
   account_notification_email String              @db.VarChar(255)
+  account_logo_url           String?             @db.VarChar(255)
   partner_id                 String?             @db.Uuid
   creator_id                 String              @db.VarChar(255)
   account_creation_url       String?             @db.VarChar(255)
@@ -154,6 +155,7 @@ model transactions {
   transaction_redirect_url       String?       @db.VarChar(255)
   transaction_notification_url   String?       @db.VarChar(255)
   transaction_notification_email String?       @db.VarChar(255)
+  transaction_log_url            String?       @db.VarChar(255)
   transaction_initiated          DateTime?     @default(now()) @db.Timestamptz(6)
   transaction_finished           DateTime?     @db.Timestamptz(6)
   transaction_metadata           Json?         @db.Json

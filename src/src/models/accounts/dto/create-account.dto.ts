@@ -55,3 +55,14 @@ export class CreateAccountDto {
   })
   subscription_type?: 'ribpay_classic' | 'ribpay_plus';
 }
+
+export class LogoAccountDto {
+  @ApiProperty({
+    description: 'File to be validated.',
+    type: 'string',
+    format: 'binary',
+    required: true,
+  })
+  @IsNotEmpty({ message: 'File must be provided.' })
+  file: any;
+}

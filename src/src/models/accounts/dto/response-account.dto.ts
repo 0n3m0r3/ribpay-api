@@ -91,6 +91,8 @@ export class AccountDetailsDto {
   })
   account_blob_storage_url?: string;
 
+  account_logo_url?: string;
+
   @ApiProperty({
     example: 'partner_id',
     description: 'Partner id of the account.',

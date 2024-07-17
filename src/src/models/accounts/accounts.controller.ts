@@ -1,14 +1,18 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   Post,
   Put,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -21,10 +25,16 @@ import {
 import { IdDTO } from '../dto/id.dto';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { AccountDetailsDto, AccountListResponseDto } from './dto/response-account.dto';
+import {
+  AccountDetailsDto,
+  AccountListResponseDto,
+} from './dto/response-account.dto';
 import { AccountCreateResponseDto } from './dto/response-create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { AccountListQueryDto } from './dto/query-list-account.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesAzureService } from '../validate/files-azure.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @ApiHeader({
   name: 'sub-account',
@@ -34,7 +44,11 @@ import { AccountListQueryDto } from './dto/query-list-account.dto';
 @ApiTags('Accounts')
 @Controller('accounts')
 export class AccountsController {
-  constructor(private readonly accountsService: AccountsService) {}
+  constructor(
+    private readonly accountsService: AccountsService,
+    private readonly filesAzureService: FilesAzureService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new account' })
@@ -131,5 +145,54 @@ export class AccountsController {
   @Delete(':id')
   remove(@Param() params: IdDTO, @Req() req: any) {
     return this.accountsService.remove(params.id, req.subAccount);
+  }
+
+  @ApiOperation({ summary: 'Add or Update the logo of an account' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Unique identifier of the account',
+    type: 'uuid',
+  })
+  @ApiBody({
+    description: 'The file to upload.',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Logo successfully added or updated',
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 404, description: 'Account not found' })
+  @Post(':id/logo')
+  @UseInterceptors(FileInterceptor('file'))
+  async logo(
+    @Param() params: IdDTO,
+    @Req() req: any,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<any> {
+    const account = await this.prisma.accounts.findUnique({
+      where: {
+        account_id: params.id,
+        creator_id: req.subAccount,
+      },
+    });
+    if (!account) throw new NotFoundException('Account not found');
+    if (account.account_deletion_date)
+      throw new BadRequestException('Account has been deleted');
+
+    const containerName = 'account-logo';
+    const fileUrl = await this.filesAzureService.uploadFile(
+      file,
+      containerName,
+    );
+
+    return this.accountsService.logo(params.id, req.subAccount, fileUrl);
   }
 }

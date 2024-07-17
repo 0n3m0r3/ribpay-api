@@ -34,8 +34,7 @@ export class AccountsService {
     console.log('lago api key', process.env.LAGO_API_KEY);
     const client = Client(process.env.LAGO_API_KEY, {
       baseUrl: 'https://api.getlago.com/api/v1',
-    } 
-    );
+    });
 
     console.log('client', client);
     // Return an error if the company already exists
@@ -71,7 +70,7 @@ export class AccountsService {
       data: {
         account_national_id: createAccountDto.siret,
         account_is_active: false,
-        account_country: 'FR',  
+        account_country: 'FR',
         account_currency: 'EUR',
         account_notification_email: createAccountDto.notification_email,
         account_name: beneficiaryName,
@@ -143,7 +142,6 @@ export class AccountsService {
       const res = await client.customers.createCustomer({
         customer: customerObject as any,
       });
-
 
       console.log('res', res);
     } catch (error) {
@@ -389,6 +387,13 @@ export class AccountsService {
     await this.prisma.accounts.update({
       where: { account_id: id, creator_id: subAccount },
       data: { account_is_active: false, account_deletion_date: new Date() },
+    });
+  }
+
+  async logo(id: string, subAccount: string, fileUrl: string) {
+    return this.prisma.accounts.update({
+      where: { account_id: id, creator_id: subAccount },
+      data: { account_logo_url: fileUrl },
     });
   }
 }
