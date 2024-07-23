@@ -111,7 +111,8 @@ export class TransactionsService {
         creator_id: subAccount,
       },
       data: {
-        transaction_auth_url: `https://www.ribpay.page/authorize/v2/${transactionData.transaction_id}`,
+        transaction_auth_url: `https://portal-deptor-test-2bc42nt7uq-ew.a.run.app/authorize/v2/${transactionData.transaction_id}`,
+        // transaction_auth_url: `https://www.ribpay.page/authorize/v2/${transactionData.transaction_id}`,
       },
     });
   }
