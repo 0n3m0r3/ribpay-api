@@ -14,3 +14,8 @@ export class TerminalIdDTO {
   @IsUUID()
   terminal_id: string;
 }
+
+export class TransactionOxlinIdDTO {
+  @IsUUID()
+  oxlin_id: string;
+}

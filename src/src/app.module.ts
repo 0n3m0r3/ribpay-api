@@ -13,6 +13,12 @@ import { InvoicesModule } from './models/invoices/invoices.module';
 import { ConfigModule } from '@nestjs/config';
 import { StatusModule } from './models/status/status.module';
 import { HealthController } from './health.controller';
+import { AdminAccountsModule } from './models/admin/accounts/accounts.module';
+import {AdminContractsModule} from './models/admin/contracts/contracts.module';
+import { AdminTransactionsModule } from './models/admin/transactions/transactions.module';
+import { AdminUsersModule } from './models/admin/users/users.module';
+import { AdminValidateModule } from './models/admin/validate/validate.module';
+import { AdminPartnersModule } from './models/admin/partners/partners.module';
 
 @Module({
   imports: [
@@ -26,6 +32,12 @@ import { HealthController } from './health.controller';
     ValidateModule,
     InvoicesModule,
     StatusModule,
+    AdminAccountsModule,
+    AdminContractsModule,
+    AdminTransactionsModule,
+    AdminUsersModule,
+    AdminValidateModule,
+    AdminPartnersModule,
   ],
   controllers: [AppController, HealthController],
   providers: [
