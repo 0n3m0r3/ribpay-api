@@ -74,6 +74,8 @@ export class TransactionsService {
       where: { transaction_id: id },
       data: {
         transaction_status: updateTransactionDto.status,
+        transaction_last_modified: new Date(updateTransactionDto.transaction_last_modified),
+        transaction_id_oxlin: updateTransactionDto.transaction_id_oxlin,
       },
     });
 

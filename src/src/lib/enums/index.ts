@@ -17,3 +17,11 @@ export enum AccountType {
 export enum TransactionStatus {
   Closed = 'CLOSED',
 }
+
+export enum AdminTransactionStatus {
+  Closed = 'CLOSED',
+  Open = 'OPEN',
+  Finished = 'FINISHED',
+  Accepted = 'ACCEPTED',
+  Executed = 'EXECUTED',
+}
