@@ -10,7 +10,7 @@ export class UpdateTransactionDto {
     example: 'CLOSED',
     description: 'Modify the status of the transaction to close it',
   })
-  status: AdminTransactionStatus;
+  transaction_status: AdminTransactionStatus;
 
   @IsUUID()
   @IsNotEmpty()
