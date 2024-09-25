@@ -9,7 +9,7 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationResponseDto } from '../../dto/pagination-response.dto';
 import { ContractListQueryDto } from './dto/query-list-contract.dto';
-import { ContractListResponseDto } from './dto/response-contract.dto';
+import { AdminRIBPayContractResponseDto, AdminVADSContractResponseDto, AdminContractListResponseDto } from './dto/response-contract.dto';
 
 @Injectable()
 export class ContractsService {
@@ -18,7 +18,7 @@ export class ContractsService {
   async findAll(
     query: ContractListQueryDto,
     baseUrl: string,
-  ): Promise<ContractListResponseDto> {
+  ): Promise<AdminContractListResponseDto> {
     const { page = 1, per_page = 10 } = query;
     const skip = (page - 1) * per_page;
     const take = per_page;
@@ -109,25 +109,16 @@ export class ContractsService {
           : null,
     };
 
-    const result = contracts.map((contract) => ({
-      contract_id: contract.contract_id,
-      contract_created_at: contract.contract_created_at,
-      contract_last_modified: contract.contract_last_modified,
-      contract_deleted_at: contract.contract_deleted_at,
-      contract_type: contract.contract_type,
-      contract_number: contract.contract_number,
-      contract_beneficiary_name: contract.contract_beneficiary_name,
-      contract_merchant_id: contract.contract_merchant_id,
-      contract_alias_id: contract.contract_alias_id,
-      terminal_id: contract.terminal_id,
-      account_id: contract.account_id,
-      creator_id: contract.creator_id,
-    }));
+    const result = contracts.map((contract) => 
+      contract.contract_type === 'VADS'?
+      this.toVADSContract(contract):
+      this.toRIBPayContract(contract)
+    );
 
     return {
       Contracts: result,
       Pagination: pagination,
-    } as ContractListResponseDto;
+    } as AdminContractListResponseDto;
   }
 
   async findOne(id: string) {
@@ -137,14 +128,19 @@ export class ContractsService {
     if (!contract) {
       throw new NotFoundException('Contract not found');
     }
-    return contract;
+
+
+    if (contract.contract_type === 'VADS') {
+      return this.toVADSContract(contract);
+    }
+    return this.toRIBPayContract(contract);
   }
 
   async findByTerminal(
     terminalId: string,
     query: ContractListQueryDto,
     baseUrl: string,
-  ): Promise<ContractListResponseDto> {
+  ): Promise<AdminContractListResponseDto> {
     const { page = 1, per_page = 10 } = query;
     const skip = (page - 1) * per_page;
     const take = per_page;
@@ -244,32 +240,23 @@ export class ContractsService {
           : null,
     };
 
-    const result = contracts.map((contract) => ({
-      contract_id: contract.contract_id,
-      contract_created_at: contract.contract_created_at,
-      contract_last_modified: contract.contract_last_modified,
-      contract_deleted_at: contract.contract_deleted_at,
-      contract_type: contract.contract_type,
-      contract_number: contract.contract_number,
-      contract_beneficiary_name: contract.contract_beneficiary_name,
-      contract_merchant_id: contract.contract_merchant_id,
-      contract_alias_id: contract.contract_alias_id,
-      terminal_id: contract.terminal_id,
-      account_id: contract.account_id,
-      creator_id: contract.creator_id,
-    }));
+    const result = contracts.map((contract) => 
+      contract.contract_type === 'VADS'?
+      this.toVADSContract(contract):
+      this.toRIBPayContract(contract)
+    );
 
     return {
       Contracts: result,
       Pagination: pagination,
-    } as ContractListResponseDto;
+    } as AdminContractListResponseDto;
   }
 
   async findByAccount(
     accountId: string,
     query: ContractListQueryDto,
     baseUrl: string,
-  ): Promise<ContractListResponseDto> {
+  ): Promise<AdminContractListResponseDto> {
     const { page = 1, per_page = 10 } = query;
     const skip = (page - 1) * per_page;
     const take = per_page;
@@ -369,7 +356,66 @@ export class ContractsService {
           : null,
     };
 
-    const result = contracts.map((contract) => ({
+    const result = contracts.map((contract) => 
+      contract.contract_type === 'VADS'?
+      this.toVADSContract(contract):
+      this.toRIBPayContract(contract)
+  );
+
+    return {
+      Contracts: result,
+      Pagination: pagination,
+    } as AdminContractListResponseDto;
+  }
+  
+
+  async activateContract(id: string) {
+    const contract = await this.prisma.contracts.findUnique({
+      where: { contract_id: id },
+    });
+
+    if (!contract) {
+      throw new NotFoundException('Contract not found');
+    }
+
+    if (contract.contract_is_active) {
+      throw new ConflictException('Contract is already active');
+    }
+
+    await this.prisma.contracts.update({
+      where: { contract_id: id },
+      data: { contract_is_active: true },
+    });
+
+    return {
+      message: 'Contract activated successfully',
+    };
+  }
+
+
+  private toVADSContract(contract: any): AdminVADSContractResponseDto {
+    return {
+      contract_id: contract.contract_id,
+      contract_is_active: contract.contract_is_active,
+      contract_created_at: contract.contract_created_at,
+      contract_last_modified: contract.contract_last_modified,
+      contract_deleted_at: contract.contract_deleted_at,
+      contract_type: contract.contract_type,
+      contract_number: contract.contract_number,
+      contract_beneficiary_name: contract.contract_beneficiary_name,
+      contract_merchant_id: contract.contract_merchant_id,
+      terminal_id: contract.terminal_id,
+      account_id: contract.account_id,
+      creator_id: contract.creator_id,
+      contract_bank_name: contract.contract_bank_name,
+      contract_bank_code: contract.contract_bank_code,
+      contract_3d_secure: contract.contract_3d_secure,
+      contract_max_amount: contract.contract_max,
+    };
+  }
+
+  private toRIBPayContract(contract: any): AdminRIBPayContractResponseDto {
+    return {
       contract_id: contract.contract_id,
       contract_created_at: contract.contract_created_at,
       contract_last_modified: contract.contract_last_modified,
@@ -378,18 +424,10 @@ export class ContractsService {
       contract_number: contract.contract_number,
       contract_beneficiary_name: contract.contract_beneficiary_name,
       contract_merchant_id: contract.contract_merchant_id,
-      contract_alias_id: contract.contract_alias_id,
       terminal_id: contract.terminal_id,
       account_id: contract.account_id,
       creator_id: contract.creator_id,
-    }));
-
-    return {
-      Contracts: result,
-      Pagination: pagination,
-    } as ContractListResponseDto;
+      contract_alias_id: contract.contract_alias_id,
+    };
   }
-
-
-
 }
