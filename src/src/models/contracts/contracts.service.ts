@@ -17,7 +17,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { isDev } from '../../utils/is-dev';
 import { generateReference } from '../../utils/uuid-helpers';
 import { PaginationResponseDto } from '../dto/pagination-response.dto';
-import { CreateContractDto } from './dto/create-contract.dto';
+import {
+  CreateRIBPayContractDto,
+  CreateVADSContractDto,
+} from './dto/create-contract.dto';
 import { ContractListQueryDto } from './dto/query-list-contract.dto';
 import { ContractListResponseDto } from './dto/response-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
@@ -26,7 +29,10 @@ import { UpdateContractDto } from './dto/update-contract.dto';
 export class ContractsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createContractDto: CreateContractDto, subAccount: string) {
+  async createRIBPayContracts(
+    createContractDto: CreateRIBPayContractDto,
+    subAccount: string,
+  ) {
     const account = await this.prisma.accounts.findUnique({
       where: {
         account_id: createContractDto.account_id,
@@ -165,6 +171,76 @@ export class ContractsService {
         creator_id: subAccount,
         contract_beneficiary_name: account.account_name,
         contract_number,
+      },
+    });
+  }
+
+  async createVADSContracts(
+    createContractDto: CreateVADSContractDto,
+    subAccount: string,
+  ) {
+    const account = await this.prisma.accounts.findUnique({
+      where: {
+        account_id: createContractDto.account_id,
+        account_deletion_date: null,
+        account_is_active: true,
+        creator_id: subAccount,
+      },
+    });
+
+    if (!account) {
+      throw new UnprocessableEntityException(
+        'Account does not exist, has been deleted or is inactive',
+      );
+    }
+
+    if (createContractDto?.terminal_id) {
+      const terminal = await this.prisma.terminals.findUnique({
+        where: {
+          terminal_id: createContractDto.terminal_id,
+          creator_id: subAccount,
+        },
+      });
+
+      if (!terminal) {
+        throw new NotFoundException('Terminal does not exist');
+      }
+
+      const contracts = await this.prisma.contracts.findMany({
+        where: {
+          terminal_id: createContractDto.terminal_id,
+          contract_type: 'VADS',
+          creator_id: subAccount,
+          contract_deleted_at: null,
+        },
+      });
+
+      if (contracts.length > 0) {
+        throw new ConflictException(
+          'Terminal already has a contract of this type',
+        );
+      }
+    }
+
+    const contract_number = generateReference({
+      prefix: 'OXLN',
+      contractId: createContractDto.contract_merchant_id,
+    });
+
+    return await this.prisma.contracts.create({
+      data: {
+        contract_is_active: createContractDto.contract_is_active,
+        contract_type: createContractDto.contract_type,
+        contract_merchant_id: createContractDto.contract_merchant_id,
+        account_id: createContractDto.account_id,
+        terminal_id: createContractDto?.terminal_id,
+        creator_id: subAccount,
+        contract_beneficiary_name: account.account_name,
+        contract_number,
+        contract_bank_name: createContractDto.contract_bank_name,
+        contract_bank_code: createContractDto.contract_bank_code,
+        contract_3d_secure: createContractDto.contract_3d_secure || true,
+        contract_max_amount: createContractDto.contract_max_amount || 10000,
       },
     });
   }

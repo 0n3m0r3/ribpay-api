@@ -1,3 +1,4 @@
+// src/models/contracts/dto/base-contract.dto.ts
 import {
   IsString,
   IsNotEmpty,
@@ -5,6 +6,9 @@ import {
   Matches,
   IsOptional,
   IsUUID,
+  IsBoolean,
+  IsInt,
+  ValidateIf,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -20,15 +24,6 @@ export class CreateContractDto {
   })
   contract_type: 'RIBPAY' | 'VADS';
 
-  @IsString()
-  @IsNotEmpty()
-  @Matches(/^[A-Z]{2}[0-9]{2}(?:[]?[a-zA-Z0-9]){18,30}$/)
-  @ApiProperty({
-    description: 'IBAN number for the contract.',
-    example: 'FR1420041010050500013M02606',
-    required: true,
-  })
-  iban: string;
 
   @IsString()
   @IsNotEmpty()
@@ -53,4 +48,88 @@ export class CreateContractDto {
     format: 'uuid',
   })
   terminal_id?: string;
+}
+
+
+export class CreateRIBPayContractDto extends CreateContractDto {
+
+
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^[A-Z]{2}[0-9]{2}(?:[]?[a-zA-Z0-9]){18,30}$/)
+  @ApiProperty({
+    description: 'IBAN number for the contract.',
+    example: 'FR1420041010050500013M02606',
+    required: true,
+  })
+  iban: string;
+
+}
+
+
+export class CreateVADSContractDto extends CreateContractDto {
+
+  @ValidateIf(o => o.contract_type === 'VADS')
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Is the contract active.',
+    example: true,
+    required: true,
+  })
+  contract_is_active: boolean;
+
+  @ValidateIf(o => o.contract_type === 'VADS')
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Merchant ID for the contract.',
+    example: '123456789',
+    required: true,
+  })
+  contract_merchant_id: string;
+
+
+
+  @ValidateIf(o => o.contract_type === 'VADS')
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Name of the bank for the contract.',
+    example: 'BANQUE POPULAIRE AQUITAINE CENTRE ATLANTIQUE',
+    required: true,
+  })
+  contract_bank_name: string;
+
+  @ValidateIf(o => o.contract_type === 'VADS')
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Code of the bank for the contract.',
+    example: '10907',
+    required: true,
+  })
+  contract_bank_code: string;
+
+  @ValidateIf(o => o.contract_type === 'VADS')
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Is 3D Secure active for the contract.',
+    example: true,
+    required: true,
+  })
+  contract_3d_secure: boolean;
+
+  @ValidateIf(o => o.contract_type === 'VADS')
+  @IsInt()
+  @IsEnum([100, 250, 500, 1000, 1500, 2500, 5000, 10000])
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Max amount for the contract.',
+    example: 10000,
+    required: true,
+    enum: [100, 250, 500, 1000, 1500, 2500, 5000, 10000],
+  })
+  contract_max_amount: number;
 }

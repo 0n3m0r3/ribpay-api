@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ContractsService } from './contracts.service';
-import { CreateContractDto } from './dto/create-contract.dto';
+import { CreateContractDto, CreateRIBPayContractDto, CreateVADSContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
 import { ContractResponseDto } from './dto/response-contract.dto';
 import {
@@ -21,6 +21,8 @@ import {
   ApiParam,
   ApiBody,
   ApiHeader,
+  ApiExtraModels,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { AccountIdDTO, IdDTO, TerminalIdDTO } from '../dto/id.dto';
 import { ContractListQueryDto } from './dto/query-list-contract.dto';
@@ -32,11 +34,19 @@ import { ContractListQueryDto } from './dto/query-list-contract.dto';
   description: 'Sub-account identifier required for all requests',
 })
 @Controller('contracts')
+@ApiExtraModels(CreateRIBPayContractDto, CreateVADSContractDto)
 export class ContractsController {
   constructor(private readonly contractsService: ContractsService) {}
 
   @ApiOperation({ summary: 'Create a new contract' })
-  @ApiBody({ type: CreateContractDto })
+  @ApiBody({
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(CreateRIBPayContractDto) },
+        { $ref: getSchemaPath(CreateVADSContractDto)},
+      ],
+    },
+  })
   @ApiResponse({
     status: 201,
     description: 'Contract created successfully',
@@ -44,8 +54,12 @@ export class ContractsController {
   })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @Post()
-  create(@Body() createContractDto: CreateContractDto, @Req() req: any) {
-    return this.contractsService.create(createContractDto, req.subAccount);
+  create(@Body() createContractDto: CreateRIBPayContractDto | CreateVADSContractDto, @Req() req: any) {
+    if (createContractDto.contract_type === 'RIBPAY') {
+      return this.contractsService.createRIBPayContracts(createContractDto as CreateRIBPayContractDto, req.subAccount);
+    } else if(createContractDto.contract_type === 'VADS') {
+      return this.contractsService.createVADSContracts(createContractDto as CreateVADSContractDto, req.subAccount);
+    }
   }
 
   @ApiOperation({ summary: 'Retrieve all contracts' })

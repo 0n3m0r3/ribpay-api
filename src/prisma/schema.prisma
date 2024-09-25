@@ -57,6 +57,7 @@ model billing_addresses {
 
 model contracts {
   contract_id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contract_is_active        Boolean?
   contract_last_modified    DateTime?      @db.Timestamptz(6)
   contract_deleted_at       DateTime?      @db.Timestamptz(6)
   contract_type             String         @db.VarChar(255)
@@ -64,6 +65,10 @@ model contracts {
   contract_beneficiary_name String         @db.VarChar(255)
   contract_merchant_id      String         @db.VarChar(255)
   contract_alias_id         String?        @db.VarChar(255)
+  contract_bank_name        String?        @db.VarChar(255)
+  contract_bank_code        String?        @db.VarChar(5)
+  contract_3d_secure        Boolean?
+  contract_max_amount       Int?
   terminal_id               String?        @db.Uuid
   account_id                String         @db.Uuid
   creator_id                String         @db.VarChar(255)
