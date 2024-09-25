@@ -222,14 +222,11 @@ export class ContractsService {
       }
     }
 
-    const contract_number = generateReference({
-      prefix: 'OXLN',
-      contractId: createContractDto.contract_merchant_id,
-    });
+    const contract_number = `VADS_${createContractDto.contract_merchant_id}`;
 
     return await this.prisma.contracts.create({
       data: {
-        contract_is_active: createContractDto.contract_is_active,
+        contract_is_active: false, 
         contract_type: createContractDto.contract_type,
         contract_merchant_id: createContractDto.contract_merchant_id,
         account_id: createContractDto.account_id,

@@ -70,16 +70,6 @@ export class CreateRIBPayContractDto extends CreateContractDto {
 export class CreateVADSContractDto extends CreateContractDto {
 
   @ValidateIf(o => o.contract_type === 'VADS')
-  @IsBoolean()
-  @IsNotEmpty()
-  @ApiProperty({
-    description: 'Is the contract active.',
-    example: true,
-    required: true,
-  })
-  contract_is_active: boolean;
-
-  @ValidateIf(o => o.contract_type === 'VADS')
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
