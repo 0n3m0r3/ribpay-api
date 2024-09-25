@@ -22,7 +22,11 @@ import {
   CreateVADSContractDto,
 } from './dto/create-contract.dto';
 import { ContractListQueryDto } from './dto/query-list-contract.dto';
-import { ContractListResponseDto } from './dto/response-contract.dto';
+import {
+  ContractListResponseDto,
+  RIBPayContractResponseDto,
+  VADSContractResponseDto,
+} from './dto/response-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
 
 @Injectable()
@@ -161,7 +165,7 @@ export class ContractsService {
       contractId: authorizedAccount.id,
     });
 
-    return await this.prisma.contracts.create({
+    const contract = await this.prisma.contracts.create({
       data: {
         contract_type: createContractDto.contract_type,
         contract_merchant_id: authorizedAccount.id,
@@ -173,6 +177,8 @@ export class ContractsService {
         contract_number,
       },
     });
+
+    return this.toRIBPayContract(contract);
   }
 
   async createVADSContracts(
@@ -224,9 +230,9 @@ export class ContractsService {
 
     const contract_number = `VADS_${createContractDto.contract_merchant_id}`;
 
-    return await this.prisma.contracts.create({
+    const contract = await this.prisma.contracts.create({
       data: {
-        contract_is_active: false, 
+        contract_is_active: false,
         contract_type: createContractDto.contract_type,
         contract_merchant_id: createContractDto.contract_merchant_id,
         account_id: createContractDto.account_id,
@@ -240,6 +246,8 @@ export class ContractsService {
         contract_max_amount: createContractDto.contract_max_amount || 10000,
       },
     });
+
+    return this.toVADSContract(contract);
   }
 
   async findAll(
@@ -338,20 +346,11 @@ export class ContractsService {
           : null,
     };
 
-    const result = contracts.map((contract) => ({
-      contract_id: contract.contract_id,
-      contract_created_at: contract.contract_created_at,
-      contract_last_modified: contract.contract_last_modified,
-      contract_deleted_at: contract.contract_deleted_at,
-      contract_type: contract.contract_type,
-      contract_number: contract.contract_number,
-      contract_beneficiary_name: contract.contract_beneficiary_name,
-      contract_merchant_id: contract.contract_merchant_id,
-      contract_alias_id: contract.contract_alias_id,
-      terminal_id: contract.terminal_id,
-      account_id: contract.account_id,
-      creator_id: contract.creator_id,
-    }));
+    const result = contracts.map((contract) =>
+      contract.contract_type === 'VADS'
+        ? this.toVADSContract(contract)
+        : this.toRIBPayContract(contract),
+    );
 
     return {
       Contracts: result,
@@ -366,7 +365,10 @@ export class ContractsService {
     if (!contract) {
       throw new NotFoundException('Contract not found');
     }
-    return contract;
+    if (contract.contract_type === 'VADS') {
+      return this.toVADSContract(contract);
+    }
+    return this.toRIBPayContract(contract);
   }
 
   async findByTerminal(
@@ -475,20 +477,11 @@ export class ContractsService {
           : null,
     };
 
-    const result = contracts.map((contract) => ({
-      contract_id: contract.contract_id,
-      contract_created_at: contract.contract_created_at,
-      contract_last_modified: contract.contract_last_modified,
-      contract_deleted_at: contract.contract_deleted_at,
-      contract_type: contract.contract_type,
-      contract_number: contract.contract_number,
-      contract_beneficiary_name: contract.contract_beneficiary_name,
-      contract_merchant_id: contract.contract_merchant_id,
-      contract_alias_id: contract.contract_alias_id,
-      terminal_id: contract.terminal_id,
-      account_id: contract.account_id,
-      creator_id: contract.creator_id,
-    }));
+    const result = contracts.map((contract) =>
+      contract.contract_type === 'VADS'
+        ? this.toVADSContract(contract)
+        : this.toRIBPayContract(contract),
+    );
 
     return {
       Contracts: result,
@@ -602,20 +595,11 @@ export class ContractsService {
           : null,
     };
 
-    const result = contracts.map((contract) => ({
-      contract_id: contract.contract_id,
-      contract_created_at: contract.contract_created_at,
-      contract_last_modified: contract.contract_last_modified,
-      contract_deleted_at: contract.contract_deleted_at,
-      contract_type: contract.contract_type,
-      contract_number: contract.contract_number,
-      contract_beneficiary_name: contract.contract_beneficiary_name,
-      contract_merchant_id: contract.contract_merchant_id,
-      contract_alias_id: contract.contract_alias_id,
-      terminal_id: contract.terminal_id,
-      account_id: contract.account_id,
-      creator_id: contract.creator_id,
-    }));
+    const result = contracts.map((contract) =>
+      contract.contract_type === 'VADS'
+        ? this.toVADSContract(contract)
+        : this.toRIBPayContract(contract),
+    );
 
     return {
       Contracts: result,
@@ -710,5 +694,43 @@ export class ContractsService {
         contract_deleted_at: new Date(),
       },
     });
+  }
+
+  private toVADSContract(contract: any): VADSContractResponseDto {
+    return {
+      contract_id: contract.contract_id,
+      contract_is_active: contract.contract_is_active,
+      contract_created_at: contract.contract_created_at,
+      contract_last_modified: contract.contract_last_modified,
+      contract_deleted_at: contract.contract_deleted_at,
+      contract_type: contract.contract_type,
+      contract_number: contract.contract_number,
+      contract_beneficiary_name: contract.contract_beneficiary_name,
+      contract_merchant_id: contract.contract_merchant_id,
+      terminal_id: contract.terminal_id,
+      account_id: contract.account_id,
+      creator_id: contract.creator_id,
+      contract_bank_name: contract.contract_bank_name,
+      contract_bank_code: contract.contract_bank_code,
+      contract_3d_secure: contract.contract_3d_secure,
+      contract_max_amount: contract.contract_max,
+    };
+  }
+
+  private toRIBPayContract(contract: any): RIBPayContractResponseDto {
+    return {
+      contract_id: contract.contract_id,
+      contract_created_at: contract.contract_created_at,
+      contract_last_modified: contract.contract_last_modified,
+      contract_deleted_at: contract.contract_deleted_at,
+      contract_type: contract.contract_type,
+      contract_number: contract.contract_number,
+      contract_beneficiary_name: contract.contract_beneficiary_name,
+      contract_merchant_id: contract.contract_merchant_id,
+      terminal_id: contract.terminal_id,
+      account_id: contract.account_id,
+      creator_id: contract.creator_id,
+      contract_alias_id: contract.contract_alias_id,
+    };
   }
 }
