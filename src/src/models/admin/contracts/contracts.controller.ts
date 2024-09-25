@@ -11,7 +11,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { ContractsService } from './contracts.service';
-import { ContractResponseDto } from './dto/response-contract.dto';
 import {
   ApiOperation,
   ApiTags,
@@ -22,6 +21,11 @@ import {
 } from '@nestjs/swagger';
 import { AccountIdDTO, IdDTO, TerminalIdDTO } from '../../dto/id.dto';
 import { ContractListQueryDto } from './dto/query-list-contract.dto';
+import {
+  AdminContractListResponseDto,
+  AdminRIBPayContractResponseDto,
+  AdminVADSContractResponseDto,
+} from './dto/response-contract.dto';
 
 @ApiTags('Admin')
 @Controller('admin/contracts')
@@ -37,7 +41,7 @@ export class ContractsController {
   @ApiResponse({
     status: 200,
     description: 'Contract details',
-    type: ContractResponseDto,
+    type: AdminRIBPayContractResponseDto || AdminVADSContractResponseDto,
   })
   @Get(':id')
   findOne(@Param() params: IdDTO, @Req() req: any) {
@@ -53,7 +57,7 @@ export class ContractsController {
   @ApiResponse({
     status: 200,
     description: 'Contracts for the specified terminal',
-    type: [ContractResponseDto],
+    type: AdminContractListResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Terminal not found' })
   @Get('terminal/:terminal_id')
@@ -79,7 +83,7 @@ export class ContractsController {
   @ApiResponse({
     status: 200,
     description: 'Contracts for the specified account',
-    type: [ContractResponseDto],
+    type: AdminContractListResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Account not found' })
   @Get('account/:account_id')
@@ -94,6 +98,18 @@ export class ContractsController {
       query,
       baseUrl,
     );
+  }
+
+  @ApiOperation({ summary: 'Activate a contract' })
+  @ApiParam({
+    name: 'contract_id',
+    description: 'Unique identifier of the contract',
+    type: 'uuid',
+  })
+  @ApiResponse({ status: 200, description: 'Contract activated' })
+  @Put(':contract_id/activate')
+  activate(@Param() params: IdDTO) {
+    return this.contractsService.activateContract(params.id);
   }
 
 }
