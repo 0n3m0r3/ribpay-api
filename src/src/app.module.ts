@@ -19,9 +19,12 @@ import { AdminTransactionsModule } from './models/admin/transactions/transaction
 import { AdminUsersModule } from './models/admin/users/users.module';
 import { AdminValidateModule } from './models/admin/validate/validate.module';
 import { AdminPartnersModule } from './models/admin/partners/partners.module';
+import { TasksModule } from './tasks/tasks.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     ContractsModule,
     TerminalsModule,
@@ -38,6 +41,7 @@ import { AdminPartnersModule } from './models/admin/partners/partners.module';
     AdminUsersModule,
     AdminValidateModule,
     AdminPartnersModule,
+    TasksModule,
   ],
   controllers: [AppController, HealthController],
   providers: [
