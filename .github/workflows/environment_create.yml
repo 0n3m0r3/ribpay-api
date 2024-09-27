@@ -125,13 +125,21 @@ jobs:
                       "oxlin-client-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                       "lago-api-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                       "azure-storage=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                      "aws_access_key_id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-access-key-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                      "aws_secret_access_key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-secret-access-key,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                      "payline_merchant_id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-merchant-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                      "payline_key_secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-key-secret,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
             --env-vars "DATABASE_URL=postgres://${{ secrets.POSTGRES_ADMIN_USERNAME }}:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ secrets.POSTGRES_SERVER_NAME }}.postgres.database.azure.com:5432/${{ env.DATABASE_NAME }}?sslmode=require" \
                        "INPI_USERNAME=secretref:inpi-username" \
                        "INPI_PASSWORD=secretref:inpi-password" \
                        "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
                        "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
                        "LAGO_API_KEY=secretref:lago-api-key" \
-                       "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage"
+                       "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage" \
+                       "AWS_ACCESS_KEY_ID=secretref:aws_access_key_id" \
+                       "AWS_SECRET_ACCESS_KEY=secretref:aws_secret_access_key" \
+                       "PAYLINE_MERCHANT_ID=secretref:payline_merchant_id" \
+                       "PAYLINE_KEY_SECRET=secretref:payline_key_secret"
 
       - name: Output deployment information
         run: |
