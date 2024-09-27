@@ -36,6 +36,7 @@
     "@pdfme/schemas": "^4.5.2",
     "@prisma/client": "^5.16.2",
     "@ribpay/oxlin": "^1.0.0-beta.2",
+    "@ribpay/payline-typescript-sdk": "^0.3.0",
     "@types/multer": "^1.4.11",
     "axios": "^1.6.8",
     "axios-retry": "^4.1.0",

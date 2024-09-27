@@ -3,6 +3,20 @@ import { Cron } from '@nestjs/schedule';
 import axios from 'axios';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { sendMail } from 'src/utils/mailing/mail';
+let Payline, PaylineWeb, PaylineDoWebPaymentRequest, PaylineGetWebPaymentDetailsRequest, PaylineCurrency, PaylineAction, PaylineDeliveryMode, PaylineMode, PaylineChallengeInd;
+
+(async () => {
+  const paylineSdk = await import("@ribpay/payline-typescript-sdk");
+  Payline = paylineSdk.Payline;
+  PaylineWeb = paylineSdk.PaylineWeb;
+  PaylineDoWebPaymentRequest = paylineSdk.PaylineDoWebPaymentRequest;
+  PaylineGetWebPaymentDetailsRequest = paylineSdk.PaylineGetWebPaymentDetailsRequest;
+  PaylineCurrency = paylineSdk.PaylineCurrency;
+  PaylineAction = paylineSdk.PaylineAction;
+  PaylineDeliveryMode = paylineSdk.PaylineDeliveryMode;
+  PaylineMode = paylineSdk.PaylineMode;
+  PaylineChallengeInd = paylineSdk.PaylineChallengeInd;
+})();
 
 @Injectable()
 export class TasksService {
@@ -29,6 +43,10 @@ export class TasksService {
     for (const contract of contracts) {
       // Call Monext API to check if the contract is activated
       // If the contract is activated, update the contract status in the database
+      const isActive = isContractActive(contract.contract_merchant_id)
+      if (isActive) {
+        contractsToActivate.push(contract.contract_id);
+      }
 
       // contractsToActivate.push(contract_id_from monext);  // Might be the merchant_id
 
@@ -70,5 +88,61 @@ export class TasksService {
         });
       }
     }
+  }
+}
+
+
+const isProduction = true;
+const isDebug = process.env.NODE_ENV !== "production";
+const paylineMerchantId = process.env.PAYLINE_MERCHANT_ID;
+const paylineKeySecret = process.env.PAYLINE_KEY_SECRET;
+const paylineConfig = new Payline(
+  paylineMerchantId,
+  paylineKeySecret,
+  null,
+  {},
+  isProduction,
+  isDebug
+);
+
+const paylineWebService = new PaylineWeb(paylineConfig);
+
+export async function isContractActive(contractNumber) {
+  // Prepare a minimal payment request to test the contract
+  const doWebPaymentRequest = new PaylineDoWebPaymentRequest("Contract Check")
+    .changeContractNumber(contractNumber)
+    .setMerchantName("Test Merchant")
+    .setCallbackUrls(
+      "https://example.com/success",
+      "https://example.com/cancel",
+      "https://example.com/notification"
+    )
+    .setAmount(1, PaylineCurrency.EUR)
+    .setPaymentDetails(PaylineAction.AuthCapture, PaylineMode.FULL)
+    .setOrderDetails(PaylineDeliveryMode.Virtual)
+    .setThreeDSInfo(PaylineChallengeInd.ChallengeAsMandate);
+
+  try {
+    const webPayment = await paylineWebService.doWebPayment(
+      doWebPaymentRequest
+    );
+
+    // Check the result code to determine if the contract is active
+    if (webPayment.result.code === "00000") {
+      // The contract is active
+      return true;
+    } else if (webPayment.result.code === "02303") {
+      // Invalid contract number; contract is not active
+      return false;
+    } else {
+      // Other errors might also indicate the contract is not active
+      console.warn(
+        `Unexpected result code (${webPayment.result.code}): ${webPayment.result.longMessage}`
+      );
+      return false;
+    }
+  } catch (error) {
+    console.error("Error while checking contract status:", error);
+    return false;
   }
 }
