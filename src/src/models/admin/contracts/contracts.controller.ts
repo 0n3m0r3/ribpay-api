@@ -102,12 +102,12 @@ export class ContractsController {
 
   @ApiOperation({ summary: 'Activate a contract' })
   @ApiParam({
-    name: 'contract_id',
+    name: 'id',
     description: 'Unique identifier of the contract',
     type: 'uuid',
   })
   @ApiResponse({ status: 200, description: 'Contract activated' })
-  @Put(':contract_id/activate')
+  @Put(':id/activate')
   activate(@Param() params: IdDTO) {
     return this.contractsService.activateContract(params.id);
   }
