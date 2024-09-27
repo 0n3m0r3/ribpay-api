@@ -41,4 +41,5 @@ export async function sendMail({ attachment, file_name, mail_subject, mail_body 
     const response = await client.send(command);
 
     console.log(response); 
+    
 }
