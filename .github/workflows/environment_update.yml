@@ -124,7 +124,7 @@ jobs:
                         "aws_access_key_id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-access-key-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                         "aws_secret_access_key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-secret-access-key,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                         "payline_merchant_id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-merchant-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "payline_key_secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-key-secret,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                        "payline_key_secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-key-secret,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" 
           else
             az containerapp secret set \
               --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
