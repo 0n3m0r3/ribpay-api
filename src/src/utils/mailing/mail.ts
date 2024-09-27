@@ -36,6 +36,7 @@ export async function sendMail({ attachment, file_name, mail_subject, mail_body 
       "Source": "louka.altdorfreynes@gmail.com",
       "SourceArn": ""
     };
+    
     const command = new SendRawEmailCommand(input);
     const response = await client.send(command);
 
