@@ -28,6 +28,11 @@ import {
   VADSContractResponseDto,
 } from './dto/response-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
+import { sendMail } from 'src/utils/mailing/mail';
+import { createMonextPDF } from 'src/utils/pdf/monext';
+
+import { MonextPDFInput } from 'src/utils/pdf/monext';
+
 
 @Injectable()
 export class ContractsService {
@@ -246,6 +251,17 @@ export class ContractsService {
         contract_max_amount: createContractDto.contract_max_amount || 10000,
       },
     });
+
+    const inputs : MonextPDFInput = {
+      beneficiary_name: account.account_name,
+      merchant_id: createContractDto.contract_merchant_id,
+      secure: createContractDto.contract_3d_secure,
+      bank_name: createContractDto.contract_bank_name,
+      bank_code: createContractDto.contract_bank_code,
+      max_amount: createContractDto.contract_max_amount.toString(),
+    };
+
+    createMonextPDF(inputs);
 
     return this.toVADSContract(contract);
   }

@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.658.1",
     "@azure/storage-blob": "^12.17.0",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.0.0",
@@ -30,6 +31,9 @@
     "@nestjs/schedule": "^4.1.1",
     "@nestjs/swagger": "^7.3.1",
     "@nestjs/terminus": "^10.2.3",
+    "@pdfme/common": "^4.5.2",
+    "@pdfme/generator": "^4.5.2",
+    "@pdfme/schemas": "^4.5.2",
     "@prisma/client": "^5.16.2",
     "@ribpay/oxlin": "^1.0.0-beta.2",
     "@types/multer": "^1.4.11",
