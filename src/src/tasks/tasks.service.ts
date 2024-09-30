@@ -3,20 +3,6 @@ import { Cron } from '@nestjs/schedule';
 import axios from 'axios';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { sendMail } from 'src/utils/mailing/mail';
-let Payline, PaylineWeb, PaylineDoWebPaymentRequest, PaylineGetWebPaymentDetailsRequest, PaylineCurrency, PaylineAction, PaylineDeliveryMode, PaylineMode, PaylineChallengeInd;
-
-(async () => {
-  const paylineSdk = await import("@ribpay/payline-typescript-sdk");
-  Payline = paylineSdk.Payline;
-  PaylineWeb = paylineSdk.PaylineWeb;
-  PaylineDoWebPaymentRequest = paylineSdk.PaylineDoWebPaymentRequest;
-  PaylineGetWebPaymentDetailsRequest = paylineSdk.PaylineGetWebPaymentDetailsRequest;
-  PaylineCurrency = paylineSdk.PaylineCurrency;
-  PaylineAction = paylineSdk.PaylineAction;
-  PaylineDeliveryMode = paylineSdk.PaylineDeliveryMode;
-  PaylineMode = paylineSdk.PaylineMode;
-  PaylineChallengeInd = paylineSdk.PaylineChallengeInd;
-})();
 
 @Injectable()
 export class TasksService {
@@ -91,23 +77,33 @@ export class TasksService {
   }
 }
 
-
-const isProduction = true;
-const isDebug = process.env.NODE_ENV !== "production";
-const paylineMerchantId = process.env.PAYLINE_MERCHANT_ID;
-const paylineKeySecret = process.env.PAYLINE_KEY_SECRET;
-const paylineConfig = new Payline(
-  paylineMerchantId,
-  paylineKeySecret,
-  null,
-  {},
-  isProduction,
-  isDebug
-);
-
-const paylineWebService = new PaylineWeb(paylineConfig);
-
 export async function isContractActive(contractNumber) {
+  
+  const paylineSdk = await import("@ribpay/payline-typescript-sdk");
+  const Payline = paylineSdk.Payline;
+  const PaylineWeb = paylineSdk.PaylineWeb;
+  const PaylineDoWebPaymentRequest = paylineSdk.PaylineDoWebPaymentRequest;
+  const PaylineCurrency = paylineSdk.PaylineCurrency;
+  const PaylineAction = paylineSdk.PaylineAction;
+  const PaylineDeliveryMode = paylineSdk.PaylineDeliveryMode;
+  const PaylineMode = paylineSdk.PaylineMode;
+  const PaylineChallengeInd = paylineSdk.PaylineChallengeInd;
+
+  const isProduction = true;
+  const isDebug = process.env.NODE_ENV !== "production";
+  const paylineMerchantId = process.env.PAYLINE_MERCHANT_ID;
+  const paylineKeySecret = process.env.PAYLINE_KEY_SECRET;
+  const paylineConfig = new Payline(
+    paylineMerchantId,
+    paylineKeySecret,
+    null,
+    {},
+    isProduction,
+    isDebug
+  );
+
+  const paylineWebService = new PaylineWeb(paylineConfig);
+
   // Prepare a minimal payment request to test the contract
   const doWebPaymentRequest = new PaylineDoWebPaymentRequest("Contract Check")
     .changeContractNumber(contractNumber)
