@@ -31,7 +31,7 @@ export class AccountsService {
     if(account.account_is_active) {
       throw new BadRequestException('Account is already active');
     }
-    await this.prisma.accounts.update({
+    const updated_account = await this.prisma.accounts.update({
       where: {
         account_id: accountId,
       },
@@ -41,6 +41,6 @@ export class AccountsService {
       },
     });
 
-    return account as unknown as AccountDetailsDto;
+    return updated_account as unknown as AccountDetailsDto;
   }
 }
