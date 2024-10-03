@@ -3,6 +3,7 @@ import {
   Get,
   Param,
   NotFoundException,
+  Put,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -35,5 +36,21 @@ export class AccountsController {
   @Get(':id')
   findOne(@Param() params: IdDTO): Promise<AccountDetailsDto>  {
     return this.accountsService.findOne(params.id);
+  }
+
+
+  @ApiOperation({ summary: 'Admin route to activate an account by ID' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Unique identifier of the account',
+    type: 'uuid',
+  })
+  @ApiResponse({ status: 200, description: 'Account activated' })
+  @ApiResponse({ status: 404, description: 'Account not found' })
+  @ApiResponse({ status: 400, description: 'Account is already active' })
+  @Put(':id/activate')
+  activate(@Param() params: IdDTO): Promise<AccountDetailsDto> {
+    return this.accountsService.activate(params.id);
   }
 }
