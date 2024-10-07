@@ -148,6 +148,7 @@ jobs:
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --cpu 0.5 \
             --memory 1.0Gi \
+            --force-revision \
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
             --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
                        "INPI_USERNAME=secretref:inpi-username" \
