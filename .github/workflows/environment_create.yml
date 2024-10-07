@@ -118,6 +118,7 @@ jobs:
             --registry-server ${{ vars.ACR_NAME }}.azurecr.io \
             --registry-username ${{ secrets.AZURE_ACR_USERNAME }} \
             --registry-password ${{ secrets.AZURE_ACR_PASSWORD }} \
+            --revision-mode single \
             --user-assigned "/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
             --secrets "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                       "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \

@@ -143,11 +143,12 @@ jobs:
 
       - name: Update Container App with New Revision
         run: |
-          az containerapp revision copy \
+          az containerapp update \
             --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --cpu 0.5 \
             --memory 1.0Gi \
+            --revision-mode single
             --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
             --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
                        "INPI_USERNAME=secretref:inpi-username" \
