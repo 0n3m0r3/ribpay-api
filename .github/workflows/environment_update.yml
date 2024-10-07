@@ -81,6 +81,10 @@ jobs:
         run: |
           az extension add --name containerapp --upgrade
 
+      - name: Set Image Tag
+        id: image_tag
+        run: echo "tag=${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }}-${{ github.run_number }}" >> $GITHUB_OUTPUT
+
       - name: Build and push container image to registry
         run: |
           cd src
@@ -93,8 +97,8 @@ jobs:
           RUN npm run build
           EXPOSE 3000
           CMD [\"npm\", \"run\", \"start:prod\"]" > Dockerfile
-          docker build --platform linux/amd64 -t ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} .
-          docker push ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }}
+          docker build --platform linux/amd64 -t ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ steps.image_tag.outputs.tag }} .
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ steps.image_tag.outputs.tag }}
 
       - name: Transform type to lowercase
         id: lowercase_type
@@ -104,18 +108,13 @@ jobs:
           input-string: ${{ needs.config.outputs.type }}
 
       - name: Set Environment Variables
-        id: set_env_vars
         run: |
           if [[ "${{ needs.config.outputs.type }}" == "Prod" ]]; then
             echo "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" >> $GITHUB_ENV
           else
             echo "DATABASE_URL=postgres://${{ secrets.POSTGRES_ADMIN_USERNAME }}:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ secrets.POSTGRES_SERVER_NAME }}.postgres.database.azure.com:5432/${{ env.DATABASE_NAME }}?sslmode=require" >> $GITHUB_ENV
           fi
-
-      - name: Search for Container App
-        id: search_container_app
-        run: |
-          az containerapp list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --query "[?name=='${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }}']"
+          echo "DEPLOYMENT_ID=${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Set Secrets
         run: |
@@ -123,31 +122,32 @@ jobs:
             az containerapp secret set \
               --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --secrets "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "oxlin-client-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "oxlin-client-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "lago-api-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "azure-storage=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "aws-access-key-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-access-key-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "aws-secret-access-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-secret-access-key,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "payline-merchant-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-merchant-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "payline-key-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-key-secret,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" 
+              --secrets \
+                "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "oxlin-client-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "oxlin-client-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "lago-api-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-prod,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "azure-storage=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "aws-access-key-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-access-key-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "aws-secret-access-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-secret-access-key,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "payline-merchant-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-merchant-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "payline-key-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-key-secret,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity"
           else
             az containerapp secret set \
               --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --secrets "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "oxlin-client-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "oxlin-client-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "lago-api-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "azure-storage=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "aws-access-key-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-access-key-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "aws-secret-access-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-secret-access-key,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "payline-merchant-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-merchant-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
-                        "payline-key-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-key-secret,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" 
-          fi
+              --secrets \
+                "inpi-username=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-username,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "inpi-password=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/inpi-password,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "oxlin-client-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-id-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "oxlin-client-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/oxlin-client-secret-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "lago-api-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/lago-api-key-dev,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "azure-storage=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/azure-storage-connection-string,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "aws-access-key-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-access-key-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "aws-secret-access-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-secret-access-key,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "payline-merchant-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-merchant-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
+                "payline-key-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-key-secret,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity"
 
       - name: Update Container App with New Revision
         run: |
@@ -156,25 +156,21 @@ jobs:
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --cpu 0.5 \
             --memory 1.0Gi \
-            --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ needs.config.outputs.type }}-${{ env.UNIQUE_SUFFIX }} \
-            --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
-                       "INPI_USERNAME=secretref:inpi-username" \
-                       "INPI_PASSWORD=secretref:inpi-password" \
-                       "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
-                       "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
-                       "LAGO_API_KEY=secretref:lago-api-key" \
-                       "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage" \
-                       "AWS_ACCESS_KEY_ID=secretref:aws-access-key-id" \
-                       "AWS_SECRET_ACCESS_KEY=secretref:aws-secret-access-key" \
-                       "PAYLINE_MERCHANT_ID=secretref:payline-merchant-id" \
-                       "PAYLINE_KEY_SECRET=secretref:payline-key-secret"
-
-      - name: Activate New Revision
-        run: |
-          az containerapp revision activate \
-            --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
+            --image ${{ vars.ACR_NAME }}.azurecr.io/ribpay-nestjs-api:${{ steps.image_tag.outputs.tag }} \
+            --set-env-vars \
+              "DATABASE_URL=${{ env.DATABASE_URL }}" \
+              "DEPLOYMENT_ID=${{ env.DEPLOYMENT_ID }}" \
+              "INPI_USERNAME=secretref:inpi-username" \
+              "INPI_PASSWORD=secretref:inpi-password" \
+              "OXLIN_CLIENT_ID=secretref:oxlin-client-id" \
+              "OXLIN_CLIENT_SECRET=secretref:oxlin-client-secret" \
+              "LAGO_API_KEY=secretref:lago-api-key" \
+              "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage" \
+              "AWS_ACCESS_KEY_ID=secretref:aws-access-key-id" \
+              "AWS_SECRET_ACCESS_KEY=secretref:aws-secret-access-key" \
+              "PAYLINE_MERCHANT_ID=secretref:payline-merchant-id" \
+              "PAYLINE_KEY_SECRET=secretref:payline-key-secret" 
 
       - name: Output deployment information
         run: |
-          echo "- [View the deployed API](https://${{ steps.lowercase_type.outputs.output-string }}.azurecontainerapps.io)" >> $GITHUB_STEP_SUMMARY
+          echo "- [View the deployed API](https://${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }}.azurecontainerapps.io)" >> $GITHUB_STEP_SUMMARY
