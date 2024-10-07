@@ -162,6 +162,12 @@ jobs:
                        "PAYLINE_MERCHANT_ID=secretref:payline-merchant-id" \
                        "PAYLINE_KEY_SECRET=secretref:payline-key-secret"
 
+      - name: Activate New Revision
+        run: |
+          az containerapp revision activate \
+            --name ${{ steps.lowercase_type.outputs.output-string }}-${{ env.UNIQUE_SUFFIX }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
+
       - name: Output deployment information
         run: |
           echo "- [View the deployed API](https://${{ steps.lowercase_type.outputs.output-string }}.azurecontainerapps.io)" >> $GITHUB_STEP_SUMMARY
