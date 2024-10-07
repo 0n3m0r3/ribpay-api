@@ -148,6 +148,7 @@ jobs:
                 "aws-secret-access-key=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/aws-secret-access-key,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                 "payline-merchant-id=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-merchant-id,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity" \
                 "payline-key-secret=keyvaultref:https://ribpayapi-keyvault.vault.azure.net/secrets/payline-key-secret,identityref:/subscriptions/b81de495-68d7-476a-8de0-c5bd925431cf/resourcegroups/ribpay-api-deployment-demo/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ribpay-managed-identity"
+          fi
 
       - name: Update Container App with New Revision
         run: |
@@ -169,7 +170,7 @@ jobs:
               "AWS_ACCESS_KEY_ID=secretref:aws-access-key-id" \
               "AWS_SECRET_ACCESS_KEY=secretref:aws-secret-access-key" \
               "PAYLINE_MERCHANT_ID=secretref:payline-merchant-id" \
-              "PAYLINE_KEY_SECRET=secretref:payline-key-secret" 
+              "PAYLINE_KEY_SECRET=secretref:payline-key-secret"
 
       - name: Output deployment information
         run: |
