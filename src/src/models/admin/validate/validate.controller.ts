@@ -24,9 +24,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { IdDTO } from '../../dto/id.dto';
 import { CreateValidatePmResponseDto } from './dto/create-validate-pm.dto';
 import { ValidateService } from './validate.service';
+import {
+  CreateValidatePpDto,
+  ResponseValidatePpDto,
+} from './dto/create-validate-pp.dto';
 
 @ApiTags('Admin')
-@Controller('admin/user_has_accounts')
+@Controller('admin')
 export class ValidateController {
   constructor(private readonly validateService: ValidateService) {}
 
@@ -40,8 +44,27 @@ export class ValidateController {
     description: 'User has accounts',
     type: CreateValidatePmResponseDto,
   })
-  @Get('admin/:id')
+  @Get('user_has_accounts/admin/:id')
   async userHasAccounts(@Param() params: IdDTO) {
     return this.validateService.userHasAccounts(params.id);
+  }
+
+  @ApiOperation({
+    summary: 'Validate Personne Physique',
+    description: 'Validate Personne Physique',
+  })
+  @ApiParam({ name: 'id', description: 'Account ID', type: 'uuid' })
+  @ApiBody({ type: CreateValidatePpDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Validation created',
+    type: ResponseValidatePpDto,
+  })
+  @Post('validate/pp/:id')
+  createPp(
+    @Param() params: IdDTO,
+    @Body() createValidateDto: CreateValidatePpDto,
+  ) {
+    return this.validateService.validatePp(params.id, createValidateDto);
   }
 }
